@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pediatric Clinical Trial Matcher</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="app-header">
+        <div class="header-container">
+            <h1>Pediatric Onco-Hematology Trial Matcher</h1>
+            <p>Search active medical protocols and review detailed enrollment profiles.</p>
+            <div class="search-box">
+                <input type="text" id="conditionInput" placeholder="e.g., Lymphoma, Neuroblastoma..." value="Leukemia">
+                <button id="searchBtn">Search Trials</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="status-message" id="statusMessage">Click search to find active protocols...</div>
+        <section class="trials-grid" id="trialsGrid"></section>
+    </main>
+
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-window">
+            <button class="modal-close-btn" id="closeModalBtn">&times;</button>
+            <div id="modalContent">
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

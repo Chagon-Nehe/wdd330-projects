@@ -1,0 +1,251 @@
+/* Existing root styles from previous step apply here */
+:root {
+    --primary-color: #1a365d;
+    --secondary-color: #2b6cb0;
+    --success-color: #2f855a;
+    --bg-light: #f7fafc;
+    --text-dark: #2d3748;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+/* Custom Design Variables for Consistency */
+:root {
+    --primary-color: #1a365d;
+    /* Deep clinical blue */
+    --secondary-color: #2b6cb0;
+    /* Vibrant accent blue */
+    --success-color: #2f855a;
+    /* Clean active/recruiting green */
+    --bg-light: #f7fafc;
+    /* Soft neutral background */
+    --text-dark: #2d3748;
+    /* High-contrast slate text */
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Base Resets */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* App Header Layout */
+.app-header {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    padding: 2.5rem 1rem;
+    text-align: center;
+}
+
+.header-container h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.header-container p {
+    color: #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+/* Modern Inline Search Bar Component */
+.search-box {
+    display: flex;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 0.5rem;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-box button {
+    background-color: var(--secondary-color);
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.search-box button:hover {
+    background-color: #2c5282;
+}
+
+/* Dashboard Grid Layout */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.status-message {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #718096;
+    margin-top: 2rem;
+}
+
+/* Responsive UI Grid Component */
+.trials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Layout Framework for Individual Trial Cards */
+.trial-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    border-top: 4px solid var(--secondary-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.trial-id {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.trial-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+/* Badge Layout for Active Recruitment Indicators */
+.trial-meta {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.status-badge {
+    background-color: #e6fffa;
+    color: var(--success-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 700;
+}
+/* Base modifications for click interaction */
+.trial-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trial-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal Overlay covering the entire screen */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Visible state triggered via JS class manipulation */
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Centered Scrollable Detail Window */
+.modal-window {
+    background: #ffffff;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow-y: auto;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #a0aec0;
+    cursor: pointer;
+}
+
+.modal-close-btn:hover {
+    color: var(--text-dark);
+}
+
+/* Clean Presentation Grid Inside the Modal */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    background: var(--bg-light);
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.detail-item h4 {
+    font-size: 0.8rem;
+    color: #718096;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+}
+
+.detail-item p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.detail-description {
+    margin-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+}
+
+.detail-description h4 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
