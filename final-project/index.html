@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Research Hub & Abstract Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/final-project/style/style.css">
+    <link rel="icon" type="image/png" href="/final-project/images/favicon.webp">
+</head>
+
+<body>
+
+    <header class="global-header">
+        <div class="logo-area">
+            <div class="app-icon"></div>
+            <h1>Clinical Research Hub</h1>
+        </div>
+        <nav class="view-switcher">
+            <button id="nav-dashboard" class="nav-btn active">Dashboard & Matrix</button>
+            <button id="nav-workspace" class="nav-btn">Abstract Workspace</button>
+        </nav>
+        <div class="project-selector-zone">
+            <label for="project-select">Project:</label>
+            <select id="project-select">
+                <option value="proj-default">Global Health Trends 2026</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="app-container-wrapper">
+
+        <section id="hero-banner" class="hero-section">
+            <div class="hero-content">
+                <h1>Accelerate Your Clinical Synthesis</h1>
+                <p>Centralize your biomedical discovery, data extraction, and manuscript composition in one structured
+                    environment.</p>
+            </div>
+            <div class="hero-image-container"></div>
+        </section>
+
+        <main id="app-viewport">
+
+            <section id="view-dashboard" class="app-view active-view">
+                <button id="mobile-filter-trigger" class="mobile-only-btn">⚙️ Toggle Filters</button>
+
+                <aside id="panel-filters" class="pane">
+                    <h2>Search Parameters</h2>
+                    <form id="search-form">
+                        <div class="input-group">
+                            <input type="text" id="search-input" placeholder="Search publications (e.g., CRISPR)..."
+                                required>
+                        </div>
+
+                        <div class="collapsible-filter-wrapper">
+                            <h3>Filters</h3>
+                            <div class="control-field">
+                                <label><input type="checkbox" id="filter-peer-reviewed" checked> Peer Reviewed
+                                    Only</label>
+                            </div>
+                            <div class="control-field">
+                                <label><input type="checkbox" id="filter-open-access"> Open Access (OA)</label>
+                            </div>
+                            <div class="control-field">
+                                <label>Min. Cohort Sample Size</label>
+                                <input type="number" id="filter-sample-size" placeholder="e.g. 50">
+                            </div>
+                            <div class="control-field">
+                                <label>Publication Year</label>
+                                <div class="range-inputs">
+                                    <input type="number" id="filter-year-start" value="2024" placeholder="Min">
+                                    <input type="number" id="filter-year-end" value="2026" placeholder="Max">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Execute Query</button>
+                    </form>
+                </aside>
+
+                <section id="panel-feed" class="pane">
+                    <div class="pane-header">
+                        <h2>Biomedical Publication Feed</h2>
+                        <span id="results-count" class="badge">0 papers found</span>
+                    </div>
+                    <div id="feed-container" class="scrollable-content">
+                        <div class="empty-state">Execute a search query to load biomedical publications.</div>
+                    </div>
+                </section>
+
+                <aside id="panel-matrix-pane" class="pane">
+                    <div class="pane-header">
+                        <h2>Data-Extraction Matrix</h2>
+                        <button id="quick-save-matrix" class="btn-accent">Quick Save</button>
+                    </div>
+                    <div id="matrix-form-container" class="disabled-state">
+                        <p class="instruction">Select an article from the feed to key in data parameters.</p>
+                        <form id="active-extraction-form">
+                            <input type="hidden" id="matrix-paper-id">
+                            <div class="form-field">
+                                <label for="m-title">Selected Article Title</label>
+                                <input type="text" id="m-title" readonly>
+                            </div>
+                            <div class="form-field">
+                                <label for="m-sample">Sample Size Metric</label>
+                                <input type="number" id="m-sample" placeholder="Extract sample size count">
+                            </div>
+                            <div class="form-field">
+                                <label for="m-method">Methodology Configuration</label>
+                                <input type="text" id="m-method" placeholder="e.g., Randomized Controlled Trial">
+                            </div>
+                            <div class="form-field">
+                                <label for="m-intervention">Intervention Implemented</label>
+                                <input type="text" id="m-intervention" placeholder="Therapeutic drug, agent, vector...">
+                            </div>
+                            <div class="form-field">
+                                <label for="m-endpoints">Primary Endpoints / Outcomes</label>
+                                <textarea id="m-endpoints" rows="3"
+                                    placeholder="Primary statistical endpoints..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                </aside>
+            </section>
+
+            <section id="view-workspace" class="app-view">
+
+                <div class="split-side left-split-grid">
+                    <div class="pane-header flex-header">
+                        <h2>Active Data-Extraction Spreadsheet</h2>
+                        <button id="export-matrix-csv" class="btn-secondary">Export Matrix (.CSV)</button>
+                    </div>
+                    <div class="table-scroll-wrap">
+                        <table id="spreadsheet-matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>PMID</th>
+                                    <th>Sample Size</th>
+                                    <th>Methodology</th>
+                                    <th>Intervention</th>
+                                    <th>Primary Endpoints</th>
+                                </tr>
+                            </thead>
+                            <tbody id="spreadsheet-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="split-side right-split-editor">
+                    <div class="pane-header flex-header">
+                        <h2>Rich-Text Abstract Composition</h2>
+                        <button id="export-abstract-doc" class="btn-primary">Export Draft (.docx)</button>
+                    </div>
+
+                    <div class="editor-workspace-card">
+                        <div class="journal-target-bar">
+                            <label for="journal-rule-select">Target Journal Ruleset:</label>
+                            <select id="journal-rule-select">
+                                <option value="nature">Nature Medicine Guidelines</option>
+                                <option value="lancet">The Lancet Guidelines</option>
+                                <option value="nejm">NEJM Ruleset</option>
+                            </select>
+                        </div>
+
+                        <div class="manuscript-input-block">
+                            <label>Manuscript Working Title</label>
+                            <input type="text" id="abstract-title" class="title-field"
+                                placeholder="Enter target manuscript title...">
+                        </div>
+
+                        <div class="structured-section-block">
+                            <span class="section-tag">Introduction / Background</span>
+                            <textarea id="sec-introduction" class="manuscript-textarea"
+                                placeholder="State background contexts..."></textarea>
+                        </div>
+                        <div class="structured-section-block">
+                            <span class="section-tag">Methods</span>
+                            <textarea id="sec-methods" class="manuscript-textarea"
+                                placeholder="Detail pooling logic and matrix cross-references..."></textarea>
+                        </div>
+                        <div class="structured-section-block">
+                            <span class="section-tag">Results</span>
+                            <textarea id="sec-results" class="manuscript-textarea"
+                                placeholder="Provide calculated data outputs and target thresholds..."></textarea>
+                        </div>
+                        <div class="structured-section-block">
+                            <span class="section-tag">Conclusion</span>
+                            <textarea id="sec-conclusion" class="manuscript-textarea"
+                                placeholder="Final deductions and future clinical scope..."></textarea>
+                        </div>
+
+                        <div class="editor-compliance-footer">
+                            <div class="word-counter-widget">
+                                Total Metrics: <span id="word-count-display" class="counter-val">0</span> / <span
+                                    id="word-limit-display">300</span> words
+                            </div>
+                            <div id="compliance-checklist" class="checklist-widget">
+                                <div class="chk-item" id="chk-headings">✔️ Structural Headings Active</div>
+                                <div class="chk-item" id="chk-length">✔️ Safe Length Threshold</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module" src="/final-project/js/app.js"></script>
+</body>
+
+</html>

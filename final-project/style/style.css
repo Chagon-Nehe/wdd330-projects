@@ -1,0 +1,592 @@
+/* Custom Palette Definitions & System Typography Rules [cite: 55, 56] */
+:root {
+    --primary-indigo: #1E3A8A;
+    /* [cite: 57] */
+    --tech-teal: #0F766E;
+    /* [cite: 58] */
+    --warning-crimson: #BE123C;
+    /* [cite: 59] */
+    --canvas-gray: #F1F5F9;
+    /* [cite: 60] */
+    --grid-white: #FFFFFF;
+    /* [cite: 61] */
+    --text-dark: #0F172A;
+    --border-light: #CBD5E1;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    /* [cite: 63] */
+    background-color: var(--canvas-gray);
+    /* [cite: 60] */
+    color: var(--text-dark);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Prevents whole-page breaks */
+}
+
+/* Typography Overrides for Document Rendering Contexts [cite: 62] */
+.scrollable-content,
+.manuscript-textarea,
+table {
+    font-family: 'Merriweather', serif;
+    /* [cite: 64] */
+}
+
+/* Global Navigation Top Header Component [cite: 57] */
+.global-header {
+    background-color: var(--primary-indigo);
+    /* [cite: 57] */
+    color: var(--grid-white);
+    /* [cite: 61] */
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    flex-shrink: 0;
+    /* Keeps header from compressing */
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Live Custom Branded App Icon [cite: 65, 66] */
+.app-icon {
+    width: 32px;
+    height: 32px;
+    background-image: url('/final-project/images/app-icon.webp');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.logo-area h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    /* [cite: 63] */
+    letter-spacing: -0.025em;
+}
+
+.view-switcher {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: #93C5FD;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    /* [cite: 63] */
+    cursor: pointer;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+    color: var(--grid-white);
+    /* [cite: 61] */
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.project-selector-zone {
+    font-size: 0.875rem;
+}
+
+.project-selector-zone select {
+    background: #1E40AF;
+    color: white;
+    border: 1px solid #3B82F6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* App Core Layout Manager Core Box */
+.app-container-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Custom Hero Layout Configuration Section */
+.hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 1.5rem 5%;
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+    /* Keeps Hero Section size fixed */
+}
+
+.hero-content {
+    max-width: 60%;
+}
+
+.hero-content h1 {
+    font-size: 1.75rem;
+    color: var(--primary-indigo);
+    /* [cite: 57] */
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+    /* [cite: 63] */
+}
+
+.hero-content p {
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.4;
+}
+
+.hero-image-container {
+    width: 260px;
+    height: 100px;
+    background-image: url('/final-project/images/hero-image.webp');
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Dynamic Core Viewport Control Frame */
+#app-viewport {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--canvas-gray);
+    /* [cite: 60] */
+}
+
+.app-view {
+    display: none;
+    height: 100%;
+    width: 100%;
+}
+
+.app-view.active-view {
+    display: flex;
+}
+
+/* Three-Panel Structural Grid Layout Dashboard [cite: 24] */
+#view-dashboard.active-view {
+    display: grid;
+    grid-template-columns: 20% 45% 35%;
+    /* [cite: 24] */
+    height: 100%;
+}
+
+.pane {
+    background-color: var(--grid-white);
+    /* [cite: 61] */
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.pane h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    /* [cite: 63] */
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--primary-indigo);
+    /* [cite: 57] */
+}
+
+/* Inputs & Form Layout Controls */
+form {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.control-field,
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-light);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
+
+input:focus,
+textarea:focus {
+    outline: 2px solid var(--tech-teal);
+    /* [cite: 58] */
+}
+
+.range-inputs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Action Trigger Mechanics */
+.btn-primary {
+    background-color: var(--primary-indigo);
+    color: white;
+}
+
+/* [cite: 57] */
+.btn-accent {
+    background-color: var(--tech-teal);
+    color: white;
+}
+
+/* [cite: 58] */
+.btn-secondary {
+    background-color: #64748B;
+    color: white;
+}
+
+.btn-primary,
+.btn-accent,
+.btn-secondary {
+    border: none;
+    padding: 0.625rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    /* [cite: 63] */
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-primary:hover,
+.btn-accent:hover {
+    opacity: 0.9;
+}
+
+/* Dynamic Sub-Feed Components & Scroll Configuration */
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    /* Restores feed scrolling properties */
+    padding: 1rem;
+    background-color: var(--canvas-gray);
+    /* [cite: 60] */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.pane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    padding-right: 1rem;
+}
+
+.badge {
+    background-color: #E2E8F0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    /* [cite: 63] */
+}
+
+/* Dynamic Publication Record Cards */
+.publication-card {
+    background-color: var(--grid-white);
+    /* [cite: 61] */
+    border: 1px solid var(--border-light);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.publication-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.publication-card.selected-card {
+    border: 2px solid var(--tech-teal);
+    /* [cite: 58] */
+    background-color: #F0FDFA;
+}
+
+.publication-card h4 {
+    font-family: 'Inter', sans-serif;
+    /* [cite: 63] */
+    color: var(--primary-indigo);
+    /* [cite: 57] */
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+}
+
+.pub-metadata {
+    font-size: 0.75rem;
+    color: #64748B;
+    margin-bottom: 0.5rem;
+}
+
+.pub-snippet {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #334155;
+}
+
+/* Split-Screen Composition Grid (Workspace View) [cite: 28] */
+#view-workspace.active-view {
+    display: flex;
+    height: 100%;
+}
+
+.split-side {
+    width: 50%;
+    /* [cite: 28] */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--grid-white);
+    /* [cite: 61] */
+}
+
+.left-split-grid {
+    border-right: 2px solid var(--border-light);
+}
+
+.flex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* Spreadsheet Structural Elements [cite: 15] */
+.table-scroll-wrap {
+    flex: 1;
+    overflow: auto;
+    /* Restores vertical table scrolling */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+th,
+td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+th {
+    background-color: var(--canvas-gray);
+    /* [cite: 60] */
+    font-family: 'Inter', sans-serif;
+    /* [cite: 63] */
+    font-weight: 600;
+    /* [cite: 63] */
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Rich-Text Composition UI Contexts [cite: 29] */
+.right-split-editor {
+    background-color: var(--canvas-gray);
+    /* [cite: 60] */
+    padding: 1rem;
+    overflow-y: auto;
+    /* Restores vertical writing editor scrolling */
+}
+
+.editor-workspace-card {
+    background-color: var(--grid-white);
+    /* [cite: 61] */
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-light);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.journal-target-bar {
+    background-color: var(--canvas-gray);
+    /* [cite: 60] */
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.title-field {
+    font-size: 1.15rem;
+    font-weight: 600;
+    /* [cite: 63] */
+}
+
+.structured-section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.section-tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    /* [cite: 63] */
+    color: #64748B;
+    letter-spacing: 0.05em;
+}
+
+.manuscript-textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+/* Checklist and Metric Compliance Widgets [cite: 29] */
+.editor-compliance-footer {
+    border-top: 1px solid var(--border-light);
+    padding-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.word-counter-widget {
+    font-weight: 600;
+    /* [cite: 63] */
+    font-size: 0.9rem;
+}
+
+.counter-val {
+    color: var(--tech-teal);
+    /* [cite: 58] */
+}
+
+.counter-val.over-limit {
+    color: var(--warning-crimson);
+    /* [cite: 59] */
+}
+
+.checklist-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    /* [cite: 63] */
+}
+
+.chk-item {
+    color: var(--warning-crimson);
+}
+
+/* [cite: 59] */
+.chk-item.passed {
+    color: var(--tech-teal);
+}
+
+/* [cite: 58] */
+
+.disabled-state {
+    opacity: 0.6;
+    pointer-events: none;
+    padding: 2rem;
+    text-align: center;
+}
+
+.mobile-only-btn {
+    display: none;
+}
+
+/* Responsive Engines & Overlays Configuration [cite: 21] */
+@media (max-width: 1024px) {
+    .hero-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .hero-content {
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-image-container {
+        display: none;
+        /* Collapses decorative visual canvas objects on tablets/phones */
+    }
+
+    #view-dashboard.active-view {
+        grid-template-columns: 100%;
+        grid-template-rows: auto 1fr auto;
+    }
+
+    #panel-filters {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 50;
+    }
+
+    #panel-filters.mobile-open {
+        display: flex;
+    }
+
+    #view-workspace.active-view {
+        flex-direction: column;
+    }
+
+    .split-side {
+        width: 100%;
+        height: 50%;
+    }
+
+    .mobile-only-btn {
+        display: block;
+        background-color: var(--primary-indigo);
+        /* [cite: 57] */
+        color: white;
+        padding: 0.65rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        /* [cite: 63] */
+        text-align: center;
+    }
+}
