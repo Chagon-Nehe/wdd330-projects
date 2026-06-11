@@ -41,6 +41,14 @@ const chkLength = document.getElementById("chk-length");
 const mobileFilterTrigger = document.getElementById("mobile-filter-trigger");
 const panelFilters = document.getElementById("panel-filters");
 
+const pubModal = document.getElementById("publication-modal");
+const modalTitle = document.getElementById("modal-title");
+const modalAuthors = document.getElementById("modal-authors");
+const modalAbstract = document.getElementById("modal-abstract");
+const closeModalBtn = document.getElementById("close-modal-btn");
+const modalConfirmBtn = document.getElementById("modal-confirm-btn");
+const modalPubDate = document.getElementById("modal-pubdate");
+
 let transientDiscoveryFeedMemory = [];
 
 // App Startup Orchestration
@@ -93,6 +101,22 @@ function setupEventPipelines() {
     "click",
     executeDocumentManuscriptCompilationDownload,
   );
+  // Modal Dismiss Pipelines
+  if (closeModalBtn && modalConfirmBtn && pubModal) {
+    closeModalBtn.addEventListener("click", closeModalView);
+    modalConfirmBtn.addEventListener("click", closeModalView);
+
+    // Dismiss modal if user clicks on the dark translucent background overlay
+    pubModal.addEventListener("click", (e) => {
+      if (e.target === pubModal) {
+        closeModalView();
+      }
+    });
+  }
+
+  function closeModalView() {
+    pubModal.classList.remove("modal-active");
+  }
 }
 
 function togglePrimaryViews(targetView) {
@@ -141,62 +165,73 @@ async function handleSearchExecution(e) {
   }
 }
 
+
+/** Adjust Discovery Card rendering logic to handle the new nested object array references */
 function renderDiscoveryFeedList() {
-  if (transientDiscoveryFeedMemory.length === 0) {
-    resultsCount.textContent = "0 papers found";
-    feedContainer.innerHTML =
-      '<div class="empty-state">No medical records match your parameters.</div>';
-    return;
-  }
+    if (transientDiscoveryFeedMemory.length === 0) {
+        resultsCount.textContent = "0 papers found";
+        feedContainer.innerHTML = '<div class="empty-state">No medical records match your parameters.</div>';
+        return;
+    }
 
-  resultsCount.textContent = `${transientDiscoveryFeedMemory.length} papers identified`;
-  feedContainer.innerHTML = "";
+    resultsCount.textContent = `${transientDiscoveryFeedMemory.length} papers identified`;
+    feedContainer.innerHTML = '';
 
-  transientDiscoveryFeedMemory.forEach((paper) => {
-    const card = document.createElement("div");
-    card.className = "publication-card";
-    card.setAttribute("data-pmid", paper.pmid);
+    transientDiscoveryFeedMemory.forEach(paper => {
+        const card = document.createElement('div');
+        card.className = 'publication-card';
+        card.setAttribute('data-pmid', paper.pmid);
+        
+        // Extract names cleanly from your structured array schema
+        const authorNamesList = paper.authors.map(a => a.name).join(", ") || "Unknown Authors";
+        const journalName = paper.journal.name || "Unknown Journal";
 
-    const oaTag = paper.isOpenAccess
-      ? '<span class="badge" style="background-color:#CCFBF1;color:#14532D">Open Access</span>'
-      : "";
-
-    card.innerHTML = `
-            <h4>${paper.title}</h4>
-            <div class="pub-metadata"><strong>Authors:</strong> ${paper.authors} | <strong>Journal:</strong> ${paper.journal} (${paper.year}) ${oaTag}</div>
-            <p class="pub-snippet">${paper.abstract.substring(0, 140)}...</p>
-            <div class="pub-metadata" style="margin-top:0.5rem; margin-bottom:0;">📊 Citations: ${paper.citationCount}</div>
+        card.innerHTML = `
+            <h4>${paper.title || "Untitled Document"}</h4>
+            <div class="pub-metadata"><strong>Authors:</strong> ${authorNamesList}</div>
+            <div class="pub-metadata"><strong>Journal:</strong> ${journalName} | <strong>Published:</strong> ${paper.pub_date || "N/A"}</div>
+            <p class="pub-snippet">${paper.abstract ? paper.abstract.substring(0, 130) + '...' : 'No abstract parsed.'}</p>
         `;
 
-    card.addEventListener("click", () => loadTargetPaperIntoMatrixPane(paper));
-    feedContainer.appendChild(card);
-  });
+        card.addEventListener('click', () => loadTargetPaperIntoMatrixPane(paper));
+        feedContainer.appendChild(card);
+    });
 }
 
+/** Handles parallel Lightbox display and semantic extraction formatting steps */
 function loadTargetPaperIntoMatrixPane(paper) {
-  // Clear old visual highlights
-  document
-    .querySelectorAll(".publication-card")
-    .forEach((c) => c.classList.remove("selected-card"));
+    document.querySelectorAll('.publication-card').forEach(c => c.classList.remove('selected-card'));
+    const selectedElement = document.querySelector(`.publication-card[data-pmid="${paper.pmid}"]`);
+    if (selectedElement) selectedElement.classList.add('selected-card');
 
-  const selectedElement = document.querySelector(
-    `.publication-card[data-pmid="${paper.pmid}"]`,
-  );
-  if (selectedElement) selectedElement.classList.add("selected-card");
+    matrixFormContainer.classList.remove('disabled-state');
+    matrixPaperId.value = paper.pmid;
+    mTitle.value = paper.title || "Untitled Document";
 
-  matrixFormContainer.classList.remove("disabled-state");
+    // Run your background automated semantic regex extraction engine
+    const textToAnalyze = `${paper.title} ${paper.abstract || ""}`;
+    const automatedExtraction = parseClinicalParametersFromAbstract(textToAnalyze);
 
-  // Inject parameters safely into structural views
-  matrixPaperId.value = paper.pmid;
-  mTitle.value = paper.title;
+    const history = MatrixManager.getEntry(paper.pmid);
+    mSample.value       = history ? history.sampleSize   : (automatedExtraction.sampleSize || '');
+    mMethod.value       = history ? history.methodology  : automatedExtraction.methodology;
+    mIntervention.value = history ? history.intervention : automatedExtraction.intervention;
+    mEndpoints.value    = history ? history.endpoints    : automatedExtraction.endpoints;
 
-  // Check if an existing extraction configuration is available in client memory
-  const history = MatrixManager.getEntry(paper.pmid);
-  mSample.value = history ? history.sampleSize : "";
-  mMethod.value = history ? history.methodology : "";
-  mIntervention.value = history ? history.intervention : "";
-  mEndpoints.value = history ? history.endpoints : "";
+    // Unpack Author array fields securely back into structural display text strings
+    const formattedAuthors = paper.authors.map(a => a.name).join(", ") || "Unknown Authors";
+
+    // Hydrate all parts of your newly configured Preview Lightbox Modal
+    modalTitle.textContent = paper.title || "Untitled Literature Piece";
+    modalAuthors.textContent = `By: ${formattedAuthors}`;
+    modalPubDate.textContent = `📅 Publication Date: ${paper.pub_date || "Not Explicitly Classified"}`;
+    
+    // Note: style element updates include pre-wrap styling to retain structural label layout spacing
+    modalAbstract.textContent = paper.abstract || "Full abstract text block unavailable from server query parameters.";
+
+    pubModal.classList.add('modal-active');
 }
+
 
 async function processMatrixPaneFormSave() {
   const id = matrixPaperId.value;
@@ -324,4 +359,91 @@ function triggerClientFileDownload(contentBuffer, filename, contentType) {
   document.body.appendChild(linkElement);
   linkElement.click();
   document.body.removeChild(linkElement);
+}
+
+/**
+ * Heuristic Academic Text Parsing Engine
+ * Targets specific linguistic flags inside biomedical abstracts to isolate study configurations.
+ */
+function parseClinicalParametersFromAbstract(text) {
+    if (!text) {
+        return {
+            sampleSize: '',
+            methodology: 'Clinical Study (Unspecified)',
+            intervention: 'Observational / Not Specified',
+            endpoints: 'Review full text for precise statistical endpoints.'
+        };
+    }
+
+    const cleanText = text.replace(/\n/g, " ");
+
+    // A. Sample Size Metric Heuristic Matcher
+    let derivedSampleSize = null;
+    const sampleSizeRegexes = [
+        /(?:n\s*=\s*|sample size of\s*|enrolled\s*|cohort of\s*)(\d{1,6})\b/i,
+        /(\d{1,6})\s*(?:participants|patients|subjects|healthy volunteers|cases)/i
+    ];
+    for (let regex of sampleSizeRegexes) {
+        const match = cleanText.match(regex);
+        if (match && match[1]) {
+            derivedSampleSize = parseInt(match[1]);
+            break;
+        }
+    }
+
+    // B. Methodology Configuration Heuristic Matcher
+    let derivedMethodology = "Clinical Study (Unspecified)";
+    const methodologyMap = {
+        "randomized controlled trial": "Randomized Controlled Trial (RCT)",
+        "randomised controlled trial": "Randomized Controlled Trial (RCT)",
+        "meta-analysis": "Systematic Review & Meta-Analysis",
+        "systematic review": "Systematic Review",
+        "cohort study": "Cohort Observational Study",
+        "cross-sectional": "Cross-Sectional Study",
+        "case-control": "Case-Control Retrospective Study",
+        "double-blind": "Double-Blinded Clinical Trial",
+        "in vivo": "In Vivo Experimental Model",
+        "in vitro": "In Vitro Laboratory Assay"
+    };
+    for (let [keyword, formalName] of Object.entries(methodologyMap)) {
+        if (cleanText.toLowerCase().includes(keyword)) {
+            derivedMethodology = formalName;
+            break;
+        }
+    }
+
+    // C. Intervention Implemented Heuristic Matcher
+    let derivedIntervention = "Observational / Not Specified";
+    const interventionRegexes = [
+        /(?:treated with|received|administered|evaluated|delivery vector:)\s*([^.,:;]{3,50})/i,
+        /(?:therapeutics?|variant|agent|inhibitor|vaccine|drug)\s*([^.,:;]{3,40})/i
+    ];
+    for (let regex of interventionRegexes) {
+        const match = cleanText.match(regex);
+        if (match && match[1]) {
+            derivedIntervention = match[1].trim();
+            break;
+        }
+    }
+
+    // D. Primary Endpoints / Outcomes Heuristic Matcher
+    let derivedEndpoints = "Review full text for precise statistical endpoints.";
+    const endpointRegexes = [
+        /(?:primary endpoint|primary outcome|measured|evaluated for)\s*([^.:;]{10,120})/i,
+        /(?: we observed|results indicate that)\s*([^.:;]{10,120})/i
+    ];
+    for (let regex of endpointRegexes) {
+        const match = cleanText.match(regex);
+        if (match && match[1]) {
+            derivedEndpoints = match[1].trim() + "...";
+            break;
+        }
+    }
+
+    return {
+        sampleSize: derivedSampleSize,
+        methodology: derivedMethodology,
+        intervention: derivedIntervention,
+        endpoints: derivedEndpoints
+    };
 }

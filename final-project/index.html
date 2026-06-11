@@ -10,8 +10,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap"
         rel="stylesheet">
+    <link rel="favicon" type="image/png" href="/final-project/images/favicon.webp">
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <link rel="stylesheet" href="/final-project/style/style.css">
-    <link rel="icon" type="image/png" href="/final-project/images/favicon.webp">
 </head>
 
 <body>
@@ -28,7 +29,7 @@
         <div class="project-selector-zone">
             <label for="project-select">Project:</label>
             <select id="project-select">
-                <option value="proj-default">Global Health Trends 2026</option>
+                <option value="proj-default">Scientific Trends 2026</option>
             </select>
         </div>
     </header>
@@ -38,7 +39,7 @@
         <section id="hero-banner" class="hero-section">
             <div class="hero-content">
                 <h1>Accelerate Your Clinical Synthesis</h1>
-                <p>Centralize your biomedical discovery, data extraction, and manuscript composition in one structured
+                <p>Centralize your biomedical discovery, data extraction, and build abstracts in one structured
                     environment.</p>
             </div>
             <div class="hero-image-container"></div>
@@ -53,7 +54,7 @@
                     <h2>Search Parameters</h2>
                     <form id="search-form">
                         <div class="input-group">
-                            <input type="text" id="search-input" placeholder="Search publications (e.g., CRISPR)..."
+                            <input type="text" id="search-input" placeholder="Search publications (e.g., Malaria)..."
                                 required>
                         </div>
 
@@ -209,6 +210,30 @@
             </section>
         </main>
     </div>
+
+    </div>
+    <div id="publication-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-tag">Summary Preview</span>
+                <button id="close-modal-btn" class="modal-close-x">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3 id="modal-title" class="academic-title"></h3>
+                <div id="modal-authors" class="academic-authors"></div>
+                <div id="modal-pubdate" class="academic-pubdate"></div>
+    
+                <div class="abstract-section-container">
+                    <h4>Abstract / Summary</h4>
+                    <p id="modal-abstract" class="academic-abstract" style="white-space: pre-wrap;"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-confirm-btn" class="btn-accent">Proceed to Matrix Extraction</button>
+            </div>
+        </div>
+    </div>
+    
 
     <script type="module" src="/final-project/js/app.js"></script>
 </body>

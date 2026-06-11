@@ -34,16 +34,18 @@ export const SemanticScholarService = {
         openAccessLink: data.openAccessPdf?.url || null,
       };
     } catch (error) {
-      console.warn(
-        `Semantic Scholar resolution variance on PMID ${pmid}:`,
-        error,
-      );
-      // Dynamic fallback path ensures missing elements do not crash the user interface
-      return {
-        citationCount: 0,
-        isOpenAccess: false,
-        openAccessLink: null,
-      };
+      if (error.status !== 400) {
+        console.warn(
+          `Semantic Scholar resolution variance on PMID ${pmid}:`,
+          error,
+        );
+        // Dynamic fallback path ensures missing elements do not crash the user interface
+        return {
+          citationCount: 0,
+          isOpenAccess: false,
+          openAccessLink: null,
+        };
+      }
     }
   },
 };
