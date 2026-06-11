@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A web application to centralize biomedical discovery, data extraction, and abstract building for clinical research synthesis.">
+    <meta name="keywords" content="clinical research, biomedical discovery, data extraction, abstract builder, scientific synthesis, publication feed, data-extraction matrix, manuscript composition">
+    <meta name="author" content="Chawanangwa Gondwe">
     <title>Clinical Research Hub & Abstract Builder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,13 +29,49 @@
             <button id="nav-dashboard" class="nav-btn active">Dashboard & Matrix</button>
             <button id="nav-workspace" class="nav-btn">Abstract Workspace</button>
         </nav>
-        <div class="project-selector-zone">
-            <label for="project-select">Project:</label>
-            <select id="project-select">
-                <option value="proj-default">Scientific Trends 2026</option>
-            </select>
+        <div class="auth-header-widget">
+            <div id="user-logged-in-zone" style="display: none;">
+                <span id="user-display-email" class="badge"
+                    style="background:#1E40AF; color:white; margin-right:0.5rem;"></span>
+                <button id="header-logout-btn" class="btn-secondary" style="padding:0.25rem 0.5rem; font-size:0.8rem;">Sign
+                    Out</button>
+            </div>
+            <button id="header-login-trigger-btn" class="btn-accent" style="padding:0.35rem 0.75rem; font-size:0.85rem;">Sign In
+                / Create Account</button>
         </div>
     </header>
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <span id="auth-modal-title-tag" class="modal-tag">Account Authentication</span>
+                <button id="close-auth-modal-btn" class="modal-close-x">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="auth-form-card">
+                    <form id="identity-auth-form">
+                        <div class="form-field">
+                            <label for="auth-email">Academic Email Address</label>
+                            <input type="email" id="auth-email" placeholder="name@university.edu" required
+                                autocomplete="email">
+                        </div>
+                        <div class="form-field">
+                            <label for="auth-password">Security Password</label>
+                            <input type="password" id="auth-password" placeholder="••••••••" required
+                                autocomplete="current-password">
+                        </div>
+    
+                        <div style="text-align: right; font-size: 0.8rem; margin: -0.25rem 0 0.5rem 0;">
+                            <a href="#" id="auth-toggle-context-link"
+                                style="color: var(--tech-teal); font-weight:600; text-decoration:none;">Need an account?
+                                Sign Up here</a>
+                        </div>
+    
+                        <button type="submit" id="auth-submit-btn" class="btn-primary" style="width: 100%;">Sign In</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="app-container-wrapper">
 

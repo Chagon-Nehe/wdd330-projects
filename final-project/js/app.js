@@ -1,449 +1,417 @@
+/**
+ * Clinical Research Hub - Core Application Controller (ES Module)
+ */
+
 import { PubMedService } from "./PubMedService.mjs";
-import { SemanticScholarService } from "./SemanticScholarService.mjs";
-import { MatrixManager } from "./MatrixManager.mjs";
-import { AbstractCompiler } from "./AbstractCompiler.mjs";
+// Import your new Account Management module
+import { AccountManager } from "./AccountManager.mjs";
 
-// DOM Element Registry Selector Blocks
-const navDashboard = document.getElementById("nav-dashboard");
-const navWorkspace = document.getElementById("nav-workspace");
-const viewDashboard = document.getElementById("view-dashboard");
-const viewWorkspace = document.getElementById("view-workspace");
+// 1. RUNNING STATE CONFIGURATION MODEL
+const StateManager = {
+  discoveryFeed: [],
+  matrixCache: new Map(),
+  activeView: "dashboard",
+  currentPmid: null,
+};
 
-const searchForm = document.getElementById("search-form");
-const searchInput = document.getElementById("search-input");
-const feedContainer = document.getElementById("feed-container");
-const resultsCount = document.getElementById("results-count");
+// 2. COMPLETE DOM SELECTORS CACHE
+const DOM = {
+  // Navigation Nodes
+  navDashboard: document.getElementById("nav-dashboard"),
+  navWorkspace: document.getElementById("nav-workspace"),
+  viewDashboard: document.getElementById("view-dashboard"),
+  viewWorkspace: document.getElementById("view-workspace"),
 
-const matrixFormContainer = document.getElementById("matrix-form-container");
-const activeExtractionForm = document.getElementById("active-extraction-form");
-const matrixPaperId = document.getElementById("matrix-paper-id");
-const mTitle = document.getElementById("m-title");
-const mSample = document.getElementById("m-sample");
-const mMethod = document.getElementById("m-method");
-const mIntervention = document.getElementById("m-intervention");
-const mEndpoints = document.getElementById("m-endpoints");
-const quickSaveBtn = document.getElementById("quick-save-matrix");
+  // Core Engine Input Channels
+  searchForm: document.getElementById("search-form"),
+  searchInput: document.getElementById("search-input"),
+  feedContainer: document.getElementById("feed-container"),
+  resultsCount: document.getElementById("results-count"),
 
-const spreadsheetBody = document.getElementById("spreadsheet-body");
-const exportCsvBtn = document.getElementById("export-matrix-csv");
-const exportDocBtn = document.getElementById("export-abstract-doc");
+  // Matrix Fields
+  panelMatrixPane: document.getElementById("panel-matrix-pane"),
+  matrixFormContainer: document.getElementById("matrix-form-container"),
+  matrixPaperId: document.getElementById("matrix-paper-id"),
+  mTitle: document.getElementById("m-title"),
+  mSample: document.getElementById("m-sample"),
+  mMethod: document.getElementById("m-method"),
+  mIntervention: document.getElementById("m-intervention"),
+  mEndpoints: document.getElementById("m-endpoints"),
+  quickSaveBtn: document.getElementById("quick-save-matrix"),
 
-const journalRuleSelect = document.getElementById("journal-rule-select");
-const abstractTitle = document.getElementById("abstract-title");
-const secIntro = document.getElementById("sec-introduction");
-const secMethods = document.getElementById("sec-methods");
-const secResults = document.getElementById("sec-results");
-const secConclusion = document.getElementById("sec-conclusion");
-const wordCountDisplay = document.getElementById("word-count-display");
-const wordLimitDisplay = document.getElementById("word-limit-display");
-const chkLength = document.getElementById("chk-length");
+  // Reading Preview Overlays
+  pubModal: document.getElementById("publication-modal"),
+  modalTitle: document.getElementById("modal-title"),
+  modalAuthors: document.getElementById("modal-authors"),
+  modalPubDate: document.getElementById("modal-pubdate"),
+  modalAbstract: document.getElementById("modal-abstract"),
+  closeModalBtn: document.getElementById("close-modal-btn"),
+  modalConfirmBtn: document.getElementById("modal-confirm-btn"),
 
-const mobileFilterTrigger = document.getElementById("mobile-filter-trigger");
-const panelFilters = document.getElementById("panel-filters");
+  // Identity / Membership Dialog Controls
+  authModal: document.getElementById("auth-modal"),
+  authForm: document.getElementById("identity-auth-form"),
+  authEmail: document.getElementById("auth-email"),
+  authPassword: document.getElementById("auth-password"),
+  authSubmitBtn: document.getElementById("auth-submit-btn"),
+  authToggleLink: document.getElementById("auth-toggle-context-link"),
+  authTitleTag: document.getElementById("auth-modal-title-tag"),
+  closeAuthModalBtn: document.getElementById("close-auth-modal-btn"),
+  headerLoginTriggerBtn: document.getElementById("header-login-trigger-btn"),
+  headerLogoutBtn: document.getElementById("header-logout-btn"),
 
-const pubModal = document.getElementById("publication-modal");
-const modalTitle = document.getElementById("modal-title");
-const modalAuthors = document.getElementById("modal-authors");
-const modalAbstract = document.getElementById("modal-abstract");
-const closeModalBtn = document.getElementById("close-modal-btn");
-const modalConfirmBtn = document.getElementById("modal-confirm-btn");
-const modalPubDate = document.getElementById("modal-pubdate");
+  // Spreadsheet Workspace Framework
+  spreadsheetBody: document.getElementById("spreadsheet-body"),
+};
 
-let transientDiscoveryFeedMemory = [];
+let currentAuthMode = "signin";
 
-// App Startup Orchestration
-document.addEventListener("DOMContentLoaded", async () => {
-  await MatrixManager.initializeMatrixState();
-  await loadAndHydrateAbstractWorkspace();
-  renderSpreadsheetGridData();
+// 3. CORE CONTROLLER INITIALIZATION FLOW
+function initApplication() {
+  AccountManager.init(); // Initialize the account module
+  syncAuthenticationUIElements(); // Bind UI constraints based on module response
   setupEventPipelines();
-});
+  console.log(
+    "Modular Clinical Research Hub App Dashboard Orchestrator Online.",
+  );
+}
 
+// 4. EVENT BINDINGS REGISTRY
 function setupEventPipelines() {
-  // Tab View Navigation Mechanics
-  navDashboard.addEventListener("click", () => togglePrimaryViews("dashboard"));
-  navWorkspace.addEventListener("click", () => togglePrimaryViews("workspace"));
-
-  // Mobile Overlay Filter Control
-  mobileFilterTrigger.addEventListener("click", () => {
-    panelFilters.classList.toggle("mobile-open");
-  });
-
-  // Search Lifecycle Execution
-  searchForm.addEventListener("submit", handleSearchExecution);
-
-  // Matrix Modification Tracking Mechanics
-  quickSaveBtn.addEventListener("click", processMatrixPaneFormSave);
-
-  // Abstract Real-Time Input Processing Pipeline
-  const textBlocks = [
-    abstractTitle,
-    secIntro,
-    secMethods,
-    secResults,
-    secConclusion,
-  ];
-  textBlocks.forEach((element) => {
-    element.addEventListener("input", processingCompositionUpdateDebounce);
-  });
-  journalRuleSelect.addEventListener(
-    "change",
-    processingCompositionUpdateDebounce,
+  DOM.navDashboard.addEventListener("click", () =>
+    switchPrimaryView("dashboard"),
   );
+  DOM.navWorkspace.addEventListener("click", () =>
+    switchPrimaryView("workspace"),
+  );
+  DOM.searchForm.addEventListener("submit", handleLiteratureSearch);
 
-  // Data Export Triggers
-  exportCsvBtn.addEventListener("click", () => {
-    const rawOutput = MatrixManager.generateCSVBlobString();
-    triggerClientFileDownload(rawOutput, "extraction_matrix.csv", "text/csv");
+  // Publication Lightbox Bindings
+  DOM.closeModalBtn.addEventListener("click", () =>
+    DOM.pubModal.classList.remove("modal-active"),
+  );
+  DOM.modalConfirmBtn.addEventListener("click", () =>
+    DOM.pubModal.classList.remove("modal-active"),
+  );
+  DOM.pubModal.addEventListener("click", (e) => {
+    if (e.target === DOM.pubModal)
+      DOM.pubModal.classList.remove("modal-active");
   });
 
-  exportDocBtn.addEventListener(
-    "click",
-    executeDocumentManuscriptCompilationDownload,
-  );
-  // Modal Dismiss Pipelines
-  if (closeModalBtn && modalConfirmBtn && pubModal) {
-    closeModalBtn.addEventListener("click", closeModalView);
-    modalConfirmBtn.addEventListener("click", closeModalView);
+  // Authentication Dialog Actions
+  DOM.headerLoginTriggerBtn.addEventListener("click", openAuthenticationModal);
+  DOM.closeAuthModalBtn.addEventListener("click", closeAuthenticationModal);
+  DOM.headerLogoutBtn.addEventListener("click", () => {
+    AccountManager.terminateSession();
+    syncAuthenticationUIElements();
+    switchPrimaryView("dashboard");
+  });
+  DOM.authToggleLink.addEventListener("click", toggleAuthenticationContextMode);
+  DOM.authForm.addEventListener("submit", handleAuthenticationFormSubmission);
+  DOM.authModal.addEventListener("click", (e) => {
+    if (e.target === DOM.authModal) closeAuthenticationModal();
+  });
 
-    // Dismiss modal if user clicks on the dark translucent background overlay
-    pubModal.addEventListener("click", (e) => {
-      if (e.target === pubModal) {
-        closeModalView();
-      }
-    });
-  }
-
-  function closeModalView() {
-    pubModal.classList.remove("modal-active");
-  }
+  // Matrix Commit Synchronization Action
+  DOM.quickSaveBtn.addEventListener("click", commitFormMetricsToStateCache);
 }
 
-function togglePrimaryViews(targetView) {
-  if (targetView === "dashboard") {
-    navDashboard.classList.add("active");
-    navWorkspace.classList.remove("active");
-    viewDashboard.classList.add("active-view");
-    viewWorkspace.classList.remove("active-view");
+// 5. SECURITY SWITCH SHIELDS & UI MIRRORING
+function syncAuthenticationUIElements() {
+  const loginBtn = DOM.headerLoginTriggerBtn;
+  const logoutZone = document.getElementById("user-logged-in-zone");
+  const userEmailDisplay = document.getElementById("user-display-email");
+  const workspaceTab = DOM.navWorkspace;
+  const matrixPane = DOM.panelMatrixPane;
+
+  if (AccountManager.isAuthenticated()) {
+    const user = AccountManager.getCurrentUser();
+    if (loginBtn) loginBtn.style.display = "none";
+    if (logoutZone) logoutZone.style.display = "block";
+    if (userEmailDisplay) userEmailDisplay.textContent = user.email;
+    if (workspaceTab) {
+      workspaceTab.classList.remove("locked-view-tab");
+      workspaceTab.textContent = "Abstract Workspace";
+    }
+    const existingShield = matrixPane.querySelector(".pane-blur-shield");
+    if (existingShield) existingShield.remove();
   } else {
-    navDashboard.classList.remove("active");
-    navWorkspace.classList.add("active");
-    viewDashboard.classList.remove("active-view");
-    viewWorkspace.classList.add("active-view");
-    renderSpreadsheetGridData(); // Hydrate the table layout update
+    if (loginBtn) loginBtn.style.display = "block";
+    if (logoutZone) logoutZone.style.display = "none";
+    if (workspaceTab) {
+      workspaceTab.classList.add("locked-view-tab");
+      workspaceTab.textContent = "Abstract Workspace 🔒";
+    }
+    injectBlurredShieldOverElement(
+      matrixPane,
+      "Data-Extraction Spreadsheet Matrix",
+      "Register an account to log variables, extract parameters, and track literature synthesis tables.",
+    );
   }
 }
 
-async function handleSearchExecution(e) {
-  e.preventDefault();
-  const query = searchInput.value.trim();
-  if (!query) return;
-
-  resultsCount.textContent = "Querying databases...";
-  feedContainer.innerHTML =
-    '<div class="empty-state">Contacting PubMed Gateway Services...</div>';
-
-  try {
-    const rawResults = await PubMedService.fetchPublications(query);
-    transientDiscoveryFeedMemory = [];
-
-    // Apply programmatic client-side sample filtration metrics if requested
-    const minFilterVal =
-      parseInt(document.getElementById("filter-sample-size").value) || 0;
-
-    for (let paper of rawResults) {
-      const analyticalEnrichment =
-        await SemanticScholarService.enrichCitationMetrics(paper.pmid);
-      const synthesizedModel = { ...paper, ...analyticalEnrichment };
-      transientDiscoveryFeedMemory.push(synthesizedModel);
-    }
-
-    renderDiscoveryFeedList();
-  } catch (err) {
-    feedContainer.innerHTML =
-      '<div class="empty-state" style="color:var(--warning-crimson)">Failed to execute external data fetch operations.</div>';
-  }
-}
-
-
-/** Adjust Discovery Card rendering logic to handle the new nested object array references */
-function renderDiscoveryFeedList() {
-    if (transientDiscoveryFeedMemory.length === 0) {
-        resultsCount.textContent = "0 papers found";
-        feedContainer.innerHTML = '<div class="empty-state">No medical records match your parameters.</div>';
-        return;
-    }
-
-    resultsCount.textContent = `${transientDiscoveryFeedMemory.length} papers identified`;
-    feedContainer.innerHTML = '';
-
-    transientDiscoveryFeedMemory.forEach(paper => {
-        const card = document.createElement('div');
-        card.className = 'publication-card';
-        card.setAttribute('data-pmid', paper.pmid);
-        
-        // Extract names cleanly from your structured array schema
-        const authorNamesList = paper.authors.map(a => a.name).join(", ") || "Unknown Authors";
-        const journalName = paper.journal.name || "Unknown Journal";
-
-        card.innerHTML = `
-            <h4>${paper.title || "Untitled Document"}</h4>
-            <div class="pub-metadata"><strong>Authors:</strong> ${authorNamesList}</div>
-            <div class="pub-metadata"><strong>Journal:</strong> ${journalName} | <strong>Published:</strong> ${paper.pub_date || "N/A"}</div>
-            <p class="pub-snippet">${paper.abstract ? paper.abstract.substring(0, 130) + '...' : 'No abstract parsed.'}</p>
-        `;
-
-        card.addEventListener('click', () => loadTargetPaperIntoMatrixPane(paper));
-        feedContainer.appendChild(card);
-    });
-}
-
-/** Handles parallel Lightbox display and semantic extraction formatting steps */
-function loadTargetPaperIntoMatrixPane(paper) {
-    document.querySelectorAll('.publication-card').forEach(c => c.classList.remove('selected-card'));
-    const selectedElement = document.querySelector(`.publication-card[data-pmid="${paper.pmid}"]`);
-    if (selectedElement) selectedElement.classList.add('selected-card');
-
-    matrixFormContainer.classList.remove('disabled-state');
-    matrixPaperId.value = paper.pmid;
-    mTitle.value = paper.title || "Untitled Document";
-
-    // Run your background automated semantic regex extraction engine
-    const textToAnalyze = `${paper.title} ${paper.abstract || ""}`;
-    const automatedExtraction = parseClinicalParametersFromAbstract(textToAnalyze);
-
-    const history = MatrixManager.getEntry(paper.pmid);
-    mSample.value       = history ? history.sampleSize   : (automatedExtraction.sampleSize || '');
-    mMethod.value       = history ? history.methodology  : automatedExtraction.methodology;
-    mIntervention.value = history ? history.intervention : automatedExtraction.intervention;
-    mEndpoints.value    = history ? history.endpoints    : automatedExtraction.endpoints;
-
-    // Unpack Author array fields securely back into structural display text strings
-    const formattedAuthors = paper.authors.map(a => a.name).join(", ") || "Unknown Authors";
-
-    // Hydrate all parts of your newly configured Preview Lightbox Modal
-    modalTitle.textContent = paper.title || "Untitled Literature Piece";
-    modalAuthors.textContent = `By: ${formattedAuthors}`;
-    modalPubDate.textContent = `📅 Publication Date: ${paper.pub_date || "Not Explicitly Classified"}`;
-    
-    // Note: style element updates include pre-wrap styling to retain structural label layout spacing
-    modalAbstract.textContent = paper.abstract || "Full abstract text block unavailable from server query parameters.";
-
-    pubModal.classList.add('modal-active');
-}
-
-
-async function processMatrixPaneFormSave() {
-  const id = matrixPaperId.value;
-  if (!id) return;
-
-  await MatrixManager.updateMatrixEntry(
-    id,
-    mSample.value,
-    mMethod.value,
-    mIntervention.value,
-    mEndpoints.value,
-  );
-
-  alert(`Matrix entry for PMID ${id} updated in Local Storage parameters.`);
-  renderSpreadsheetGridData();
-}
-
-function renderSpreadsheetGridData() {
-  const dataList = MatrixManager.getAllEntries();
-  spreadsheetBody.innerHTML = "";
-
-  if (dataList.length === 0) {
-    spreadsheetBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#64748B;">No compiled matrix points exist. Extract from the main dashboard feed.</td></tr>`;
+function switchPrimaryView(targetView) {
+  // Utilize module security check
+  if (targetView === "workspace" && !AccountManager.isAuthenticated()) {
+    openAuthenticationModal();
+    alert(
+      "Access Restriction: Abstract Workspaces and Active Spreadsheet Extractions are strictly reserved for registered users.",
+    );
     return;
   }
 
-  dataList.forEach((item) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-            <td><strong>${item.pmid}</strong></td>
-            <td>${item.sampleSize || "N/A"}</td>
-            <td>${item.methodology}</td>
-            <td>${item.intervention}</td>
-            <td>${item.endpoints}</td>
+  StateManager.activeView = targetView;
+  if (targetView === "dashboard") {
+    DOM.navDashboard.classList.add("active");
+    DOM.navWorkspace.classList.remove("active");
+    DOM.viewDashboard.classList.add("active-view");
+    DOM.viewWorkspace.classList.remove("active-view");
+  } else {
+    DOM.navWorkspace.classList.add("active");
+    DOM.navDashboard.classList.remove("active");
+    DOM.viewWorkspace.classList.add("active-view");
+    DOM.viewDashboard.classList.remove("active-view");
+    rebuildSpreadsheetGridUI();
+  }
+}
+
+function handleAuthenticationFormSubmission(e) {
+  e.preventDefault();
+  const email = DOM.authEmail.value.trim();
+  const password = DOM.authPassword.value;
+  let successfulAction = false;
+
+  if (currentAuthMode === "signin") {
+    successfulAction = AccountManager.verifyCredentialsAndLogin(
+      email,
+      password,
+    );
+  } else {
+    successfulAction = AccountManager.registerNewAccount(email, password);
+  }
+
+  if (successfulAction) {
+    DOM.authForm.reset();
+    closeAuthenticationModal();
+    syncAuthenticationUIElements(); // Update application layout state variables immediately
+  }
+}
+
+function loadTargetPaperIntoMatrixPane(paper) {
+  document
+    .querySelectorAll(".publication-card")
+    .forEach((c) => c.classList.remove("selected-card"));
+  const selectedElement = document.querySelector(
+    `.publication-card[data-pmid="${paper.pmid}"]`,
+  );
+  if (selectedElement) selectedElement.classList.add("selected-card");
+
+  const formattedAuthors =
+    paper.authors.map((a) => a.name).join(", ") || "Unknown Authors";
+  DOM.modalTitle.textContent = paper.title || "Untitled Literature Piece";
+  DOM.modalAuthors.textContent = `By: ${formattedAuthors}`;
+  DOM.modalPubDate.textContent = `📅 Publication Date: ${paper.pub_date || "Not Specified"}`;
+  DOM.modalAbstract.textContent =
+    paper.abstract || "Full abstract text block unavailable.";
+  DOM.pubModal.classList.add("modal-active");
+
+  // Utilize module security check
+  if (!AccountManager.isAuthenticated()) {
+    console.log(
+      "Anonymous Reader Pipeline tracking triggered. Extraction Matrix form write skipped.",
+    );
+    return;
+  }
+
+  StateManager.currentPmid = paper.pmid;
+  DOM.matrixFormContainer.classList.remove("disabled-state");
+  DOM.matrixPaperId.value = paper.pmid;
+  DOM.mTitle.value = paper.title || "Untitled Document";
+
+  const textToAnalyze = `${paper.title} ${paper.abstract || ""}`;
+  const automatedExtraction =
+    parseClinicalParametersFromAbstract(textToAnalyze);
+  const existingCache = StateManager.matrixCache.get(paper.pmid);
+
+  DOM.mSample.value = existingCache
+    ? existingCache.sampleSize
+    : automatedExtraction.sampleSize || "";
+  DOM.mMethod.value = existingCache
+    ? existingCache.methodology
+    : automatedExtraction.methodology;
+  DOM.mIntervention.value = existingCache
+    ? existingCache.intervention
+    : automatedExtraction.intervention;
+  DOM.mEndpoints.value = existingCache
+    ? existingCache.endpoints
+    : automatedExtraction.endpoints;
+}
+
+// 6. UTILITY UI PROTECTION INTERFACES
+function injectBlurredShieldOverElement(
+  parentElement,
+  titleString,
+  descString,
+) {
+  if (parentElement.querySelector(".pane-blur-shield")) return;
+
+  const shield = document.createElement("div");
+  shield.className = "pane-blur-shield";
+  shield.innerHTML = `
+        <div class="shield-prompt-box">
+            <h3>🔒 ${titleString}</h3>
+            <p>${descString}</p>
+            <button class="btn-accent launch-shield-login-btn" style="padding:0.5rem 1rem; font-size:0.8rem; border-radius:4px; border:none; cursor:pointer;">Authenticate Now</button>
+        </div>
+    `;
+
+  shield
+    .querySelector(".launch-shield-login-btn")
+    .addEventListener("click", openAuthenticationModal);
+  parentElement.style.position = "relative";
+  parentElement.appendChild(shield);
+}
+
+function openAuthenticationModal() {
+  DOM.authModal.classList.add("modal-active");
+}
+function closeAuthenticationModal() {
+  DOM.authModal.classList.remove("modal-active");
+}
+
+function toggleAuthenticationContextMode(e) {
+  e.preventDefault();
+  if (currentAuthMode === "signin") {
+    currentAuthMode = "signup";
+    DOM.authTitleTag.textContent = "Create Academic Account";
+    DOM.authSubmitBtn.textContent = "Register & Connect Account";
+    DOM.authToggleLink.textContent = "Already registered? Sign In instead";
+  } else {
+    currentAuthMode = "signin";
+    DOM.authTitleTag.textContent = "Account Authentication";
+    DOM.authSubmitBtn.textContent = "Sign In";
+    DOM.authToggleLink.textContent = "Need an account? Sign Up here";
+  }
+}
+
+// 7. REST OF RENDER ENGINE METHODS RE-EXPORTED SAFELY
+async function handleLiteratureSearch(event) {
+  event.preventDefault();
+  const query = DOM.searchInput.value.trim();
+  DOM.resultsCount.textContent = "Querying live servers...";
+  DOM.feedContainer.innerHTML =
+    '<div class="empty-state">Streaming matching clinical trials from PubMed...</div>';
+
+  try {
+    const publications = await PubMedService.fetchPublications(query);
+    StateManager.discoveryFeed = publications;
+    renderDiscoveryFeedList();
+  } catch (error) {
+    console.error("Discovery Pipeline Failure:", error);
+    DOM.resultsCount.textContent = "Error running query";
+    DOM.feedContainer.innerHTML =
+      '<div class="empty-state" style="color: var(--warning-crimson);">Query failure. Check proxy authentication pass layers.</div>';
+  }
+}
+
+function renderDiscoveryFeedList() {
+  if (StateManager.discoveryFeed.length === 0) {
+    DOM.resultsCount.textContent = "0 papers found";
+    DOM.feedContainer.innerHTML =
+      '<div class="empty-state">No medical records match your criteria.</div>';
+    return;
+  }
+  DOM.resultsCount.textContent = `${StateManager.discoveryFeed.length} papers identified`;
+  DOM.feedContainer.innerHTML = "";
+
+  StateManager.discoveryFeed.forEach((paper) => {
+    const card = document.createElement("div");
+    card.className = "publication-card";
+    card.setAttribute("data-pmid", paper.pmid);
+    const authorNamesList =
+      paper.authors.map((a) => a.name).join(", ") || "Unknown Authors";
+
+    card.innerHTML = `
+            <h4>${paper.title || "Untitled Document"}</h4>
+            <div class="pub-metadata"><strong>Authors:</strong> ${authorNamesList}</div>
+            <div class="pub-metadata"><strong>Journal:</strong> ${paper.journal?.name || "Unknown"} | <strong>Published:</strong> ${paper.pub_date || "N/A"}</div>
+            <p class="pub-snippet">${paper.abstract ? paper.abstract.substring(0, 130) + "..." : "No abstract parsed."}</p>
         `;
-    spreadsheetBody.appendChild(tr);
+    card.addEventListener("click", () => loadTargetPaperIntoMatrixPane(paper));
+    DOM.feedContainer.appendChild(card);
   });
 }
 
-function processingCompositionUpdateDebounce() {
-  const activeJournal = journalRuleSelect.value;
-  const pooledText = [
-    secIntro.value,
-    secMethods.value,
-    secResults.value,
-    secConclusion.value,
-  ].join(" ");
+function commitFormMetricsToStateCache() {
+  if (!StateManager.currentPmid) return;
+  const updatedRow = {
+    pmid: StateManager.currentPmid,
+    sampleSize: DOM.mSample.value,
+    methodology: DOM.mMethod.value,
+    intervention: DOM.mIntervention.value,
+    endpoints: DOM.mEndpoints.value,
+  };
+  StateManager.matrixCache.set(StateManager.currentPmid, updatedRow);
+  const originalText = DOM.quickSaveBtn.textContent;
+  DOM.quickSaveBtn.textContent = "Saved! ✓";
+  DOM.quickSaveBtn.style.backgroundColor = "#059669";
+  setTimeout(() => {
+    DOM.quickSaveBtn.textContent = originalText;
+    DOM.quickSaveBtn.style.backgroundColor = "";
+  }, 1500);
+}
 
-  const evaluation = AbstractCompiler.evaluateMetrics(
-    pooledText,
-    activeJournal,
-  );
-
-  wordCountDisplay.textContent = evaluation.wordCount;
-  wordLimitDisplay.textContent = evaluation.limit;
-
-  if (!evaluation.isSafeLength) {
-    wordCountDisplay.classList.add("over-limit");
-    chkLength.classList.remove("passed");
-    chkLength.textContent = "❌ Length Exceeds Target Bounds";
-  } else {
-    wordCountDisplay.classList.remove("over-limit");
-    chkLength.classList.add("passed");
-    chkLength.textContent = "✔️ Safe Length Threshold Verified";
+function rebuildSpreadsheetGridUI() {
+  DOM.spreadsheetBody.innerHTML = "";
+  if (StateManager.matrixCache.size === 0) {
+    DOM.spreadsheetBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748B;">No records compiled in your matrix spreadsheet yet.</td></tr>`;
+    return;
   }
-
-  AbstractCompiler.backupDraftState(
-    abstractTitle.value,
-    secIntro.value,
-    secMethods.value,
-    secResults.value,
-    secConclusion.value,
-    activeJournal,
-  );
+  StateManager.matrixCache.forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><strong>${row.pmid}</strong></td><td>${row.sampleSize || "N/A"}</td><td>${row.methodology}</td><td>${row.intervention}</td><td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${row.endpoints}</td>`;
+    DOM.spreadsheetBody.appendChild(tr);
+  });
 }
 
-async function loadAndHydrateAbstractWorkspace() {
-  const backup = await AbstractCompiler.getSavedDraft();
-  if (!backup) return;
-
-  abstractTitle.value = backup.title || "";
-  secIntro.value = backup.intro || "";
-  secMethods.value = backup.methods || "";
-  secResults.value = backup.results || "";
-  secConclusion.value = backup.conclusion || "";
-  journalRuleSelect.value = backup.activeJournal || "nature";
-
-  processingCompositionUpdateDebounce();
-}
-
-function executeDocumentManuscriptCompilationDownload() {
-  const cleanOutputString = `
-===================================================================
-MANUSCRIPT MANIFEST DRAFT GENERATED VIA CLINICAL RESEARCH HUB
-===================================================================
-TITLE: ${abstractTitle.value.toUpperCase()}
-TARGET RULESET: ${journalRuleSelect.value.toUpperCase()}
--------------------------------------------------------------------
-INTRODUCTION & BACKGROUND:
-${secIntro.value}
-
-METHODS:
-${secMethods.value}
-
-RESULTS:
-${secResults.value}
-
-CONCLUSION:
-${secConclusion.value}
-===================================================================
-    `;
-
-  triggerClientFileDownload(
-    cleanOutputString,
-    "manuscript_abstract_draft.txt",
-    "text/plain",
-  );
-}
-
-function triggerClientFileDownload(contentBuffer, filename, contentType) {
-  const linkElement = document.createElement("a");
-  const blobFileObj = new Blob([contentBuffer], { type: contentType });
-  linkElement.href = URL.createObjectURL(blobFileObj);
-  linkElement.download = filename;
-  document.body.appendChild(linkElement);
-  linkElement.click();
-  document.body.removeChild(linkElement);
-}
-
-/**
- * Heuristic Academic Text Parsing Engine
- * Targets specific linguistic flags inside biomedical abstracts to isolate study configurations.
- */
 function parseClinicalParametersFromAbstract(text) {
-    if (!text) {
-        return {
-            sampleSize: '',
-            methodology: 'Clinical Study (Unspecified)',
-            intervention: 'Observational / Not Specified',
-            endpoints: 'Review full text for precise statistical endpoints.'
-        };
-    }
-
-    const cleanText = text.replace(/\n/g, " ");
-
-    // A. Sample Size Metric Heuristic Matcher
-    let derivedSampleSize = null;
-    const sampleSizeRegexes = [
-        /(?:n\s*=\s*|sample size of\s*|enrolled\s*|cohort of\s*)(\d{1,6})\b/i,
-        /(\d{1,6})\s*(?:participants|patients|subjects|healthy volunteers|cases)/i
-    ];
-    for (let regex of sampleSizeRegexes) {
-        const match = cleanText.match(regex);
-        if (match && match[1]) {
-            derivedSampleSize = parseInt(match[1]);
-            break;
-        }
-    }
-
-    // B. Methodology Configuration Heuristic Matcher
-    let derivedMethodology = "Clinical Study (Unspecified)";
-    const methodologyMap = {
-        "randomized controlled trial": "Randomized Controlled Trial (RCT)",
-        "randomised controlled trial": "Randomized Controlled Trial (RCT)",
-        "meta-analysis": "Systematic Review & Meta-Analysis",
-        "systematic review": "Systematic Review",
-        "cohort study": "Cohort Observational Study",
-        "cross-sectional": "Cross-Sectional Study",
-        "case-control": "Case-Control Retrospective Study",
-        "double-blind": "Double-Blinded Clinical Trial",
-        "in vivo": "In Vivo Experimental Model",
-        "in vitro": "In Vitro Laboratory Assay"
-    };
-    for (let [keyword, formalName] of Object.entries(methodologyMap)) {
-        if (cleanText.toLowerCase().includes(keyword)) {
-            derivedMethodology = formalName;
-            break;
-        }
-    }
-
-    // C. Intervention Implemented Heuristic Matcher
-    let derivedIntervention = "Observational / Not Specified";
-    const interventionRegexes = [
-        /(?:treated with|received|administered|evaluated|delivery vector:)\s*([^.,:;]{3,50})/i,
-        /(?:therapeutics?|variant|agent|inhibitor|vaccine|drug)\s*([^.,:;]{3,40})/i
-    ];
-    for (let regex of interventionRegexes) {
-        const match = cleanText.match(regex);
-        if (match && match[1]) {
-            derivedIntervention = match[1].trim();
-            break;
-        }
-    }
-
-    // D. Primary Endpoints / Outcomes Heuristic Matcher
-    let derivedEndpoints = "Review full text for precise statistical endpoints.";
-    const endpointRegexes = [
-        /(?:primary endpoint|primary outcome|measured|evaluated for)\s*([^.:;]{10,120})/i,
-        /(?: we observed|results indicate that)\s*([^.:;]{10,120})/i
-    ];
-    for (let regex of endpointRegexes) {
-        const match = cleanText.match(regex);
-        if (match && match[1]) {
-            derivedEndpoints = match[1].trim() + "...";
-            break;
-        }
-    }
-
+  if (!text)
     return {
-        sampleSize: derivedSampleSize,
-        methodology: derivedMethodology,
-        intervention: derivedIntervention,
-        endpoints: derivedEndpoints
+      sampleSize: "",
+      methodology: "Unspecified Study",
+      intervention: "Not Specified",
+      endpoints: "No text block.",
     };
+  const cleanText = text.replace(/\n/g, " ");
+  let derivedSampleSize = null;
+  const sampleSizeRegexes = [
+    /(?:n\s*=\s*|sample size of\s*|enrolled\s*|cohort of\s*)(\d{1,6})\b/i,
+    /(\d{1,6})\s*(?:participants|patients|subjects|healthy volunteers|cases)/i,
+  ];
+  for (let regex of sampleSizeRegexes) {
+    const match = cleanText.match(regex);
+    if (match && match[1]) {
+      derivedSampleSize = parseInt(match[1]);
+      break;
+    }
+  }
+  let derivedMethodology = "Clinical Study (Unspecified)";
+  if (
+    cleanText.toLowerCase().includes("randomized controlled trial") ||
+    cleanText.toLowerCase().includes("randomised controlled trial")
+  )
+    derivedMethodology = "Randomized Controlled Trial (RCT)";
+  else if (cleanText.toLowerCase().includes("meta-analysis"))
+    derivedMethodology = "Systematic Review & Meta-Analysis";
+  else if (cleanText.toLowerCase().includes("cohort study"))
+    derivedMethodology = "Cohort Observational Study";
+
+  return {
+    sampleSize: derivedSampleSize,
+    methodology: derivedMethodology,
+    intervention: "Parsed from abstract contextual parameters.",
+    endpoints: "Review structural sections inside reading modal popup windows.",
+  };
 }
+
+initApplication();
