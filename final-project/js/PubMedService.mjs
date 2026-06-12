@@ -7,7 +7,7 @@ export const PubMedService = {
   API_KEY: "bc724ddfe74bd662d6c4036dbb4401f38108",
 
   // CORS Anywhere proxy modifier to bypass browser origin blocks locally
-  PROXY_URL: "https://wdd330-projects-06mz.onrender.com",
+  PROXY_URL: "https://wdd330-projects-06mz.onrender.com/",
 
   /**
    * Executes live two-stage queries across biomedical records using structural XML parsers
