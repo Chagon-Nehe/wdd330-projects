@@ -9,6 +9,11 @@ const { URL } = require('url');
 // Define the port for the proxy server to listen on (default to 8080 if not set in environment variables)
 const PORT = process.env.PORT || 8080;
 
+// Enable CORS for all routes and origins (for development purposes only, adjust in production)
+const cors = require('cors');
+app.use(cors({
+  origin: 'https://chagon-nehe.github.io'
+}));
 // This is a simple CORS proxy server implemented in pure Node.js without any external dependencies.
 server.listen(PORT, () => {
   console.log(`🚀 Pure Node.js CORS Proxy running on port ${PORT}`);
