@@ -7,11 +7,11 @@ export const SemanticScholarService = {
 
   /**
    * Fetches live open-access source links and citation values using your API key
-   * @param {string} pmid Target cross-reference key
+   * @param {string} title Target cross-reference key
    */
-  async enrichCitationMetrics(pmid) {
+  async enrichCitationMetrics(title) {
     try {
-      const url = `https://api.semanticscholar.org/graph/v1/paper/PMID:${pmid}?fields=citationCount,isOpenAccess,openAccessPdf`;
+      const url = `https://api.semanticscholar.org/graph/v1/paper/${title}?fields=citationCount,isOpenAccess,openAccessPdf`;
 
       const response = await fetch(url, {
         method: "GET",
@@ -36,7 +36,7 @@ export const SemanticScholarService = {
     } catch (error) {
       if (error.status !== 400) {
         console.warn(
-          `Semantic Scholar resolution variance on PMID ${pmid}:`,
+          `Semantic Scholar resolution variance on title ${title}:`,
           error,
         );
         // Dynamic fallback path ensures missing elements do not crash the user interface
