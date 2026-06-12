@@ -69,7 +69,7 @@ table {
     height: 50px;
     border-radius: 8px;
     background-color: #CBD5E1;
-    background-image: url("images/app-icon.webp");
+    background-image: url("../images/app-icon.webp");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -160,7 +160,7 @@ table {
 .hero-image-container {
     width: 260px;
     height: 100px;
-    background-image: url("images/hero-image.webp");
+    background-image: url("../images/hero-image.webp");
     background-size: cover;
     background-position: center;
     border-radius: 8px;
