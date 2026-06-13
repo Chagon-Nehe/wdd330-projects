@@ -1,15 +1,10 @@
 /* Custom Palette Definitions & System Typography Rules [cite: 55, 56] */
 :root {
     --primary-indigo: #1E3A8A;
-    /* [cite: 57] */
     --tech-teal: #0F766E;
-    /* [cite: 58] */
     --warning-crimson: #BE123C;
-    /* [cite: 59] */
     --canvas-gray: #F1F5F9;
-    /* [cite: 60] */
     --grid-white: #FFFFFF;
-    /* [cite: 61] */
     --text-dark: #0F172A;
     --border-light: #CBD5E1;
 }
@@ -22,14 +17,13 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    /* [cite: 63] */
     background-color: var(--canvas-gray);
-    /* [cite: 60] */
     color: var(--text-dark);
-    height: 100vh;
+    height:auto;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow:auto;
+    
     /* Prevents whole-page breaks */
 }
 
@@ -38,15 +32,13 @@ body {
 .manuscript-textarea,
 table {
     font-family: 'Merriweather', serif;
-    /* [cite: 64] */
+   
 }
 
 /* Global Navigation Top Header Component [cite: 57] */
 .global-header {
     background-color: var(--primary-indigo);
-    /* [cite: 57] */
     color: var(--grid-white);
-    /* [cite: 61] */
     padding: 0.75rem 1.5rem;
     display: flex;
     align-items: center;
@@ -78,7 +70,6 @@ table {
 .logo-area h1 {
     font-size: 1.25rem;
     font-weight: 700;
-    /* [cite: 63] */
     letter-spacing: -0.025em;
 }
 
@@ -93,7 +84,6 @@ table {
     color: #93C5FD;
     padding: 0.5rem 1rem;
     font-weight: 600;
-    /* [cite: 63] */
     cursor: pointer;
     border-radius: 0.375rem;
     transition: all 0.2s;
@@ -102,7 +92,6 @@ table {
 .nav-btn:hover,
 .nav-btn.active {
     color: var(--grid-white);
-    /* [cite: 61] */
     background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -145,10 +134,8 @@ table {
 .hero-content h1 {
     font-size: 1.75rem;
     color: var(--primary-indigo);
-    /* [cite: 57] */
     margin-bottom: 0.25rem;
     font-weight: 700;
-    /* [cite: 63] */
 }
 
 .hero-content p {
@@ -166,14 +153,19 @@ table {
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
-
+.hero-image-container:hover {
+    width: 500px;
+    height: 200px;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s;
+}
 /* Dynamic Core Viewport Control Frame */
 #app-viewport {
     flex: 1;
     position: relative;
     overflow: hidden;
     background-color: var(--canvas-gray);
-    /* [cite: 60] */
 }
 
 .app-view {
@@ -190,13 +182,11 @@ table {
 #view-dashboard.active-view {
     display: grid;
     grid-template-columns: 20% 45% 35%;
-    /* [cite: 24] */
     height: 100%;
 }
 
 .pane {
     background-color: var(--grid-white);
-    /* [cite: 61] */
     border-right: 1px solid var(--border-light);
     display: flex;
     flex-direction: column;
@@ -206,11 +196,9 @@ table {
 .pane h2 {
     font-size: 1rem;
     font-weight: 700;
-    /* [cite: 63] */
     padding: 1rem;
     border-bottom: 1px solid var(--border-light);
     color: var(--primary-indigo);
-    /* [cite: 57] */
 }
 
 /* Inputs & Form Layout Controls */
@@ -243,7 +231,7 @@ textarea {
 input:focus,
 textarea:focus {
     outline: 2px solid var(--tech-teal);
-    /* [cite: 58] */
+   
 }
 
 .range-inputs {
@@ -257,13 +245,12 @@ textarea:focus {
     color: white;
 }
 
-/* [cite: 57] */
+
 .btn-accent {
     background-color: var(--tech-teal);
     color: white;
 }
 
-/* [cite: 58] */
 .btn-secondary {
     background-color: #64748B;
     color: white;
@@ -293,7 +280,6 @@ textarea:focus {
     /* Restores feed scrolling properties */
     padding: 1rem;
     background-color: var(--canvas-gray);
-    /* [cite: 60] */
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -313,13 +299,11 @@ textarea:focus {
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    /* [cite: 63] */
 }
 
 /* Dynamic Publication Record Cards */
 .publication-card {
     background-color: var(--grid-white);
-    /* [cite: 61] */
     border: 1px solid var(--border-light);
     border-radius: 0.5rem;
     padding: 1rem;
@@ -328,21 +312,19 @@ textarea:focus {
 }
 
 .publication-card:hover {
+    background-color: #b1cfac;
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .publication-card.selected-card {
     border: 2px solid var(--tech-teal);
-    /* [cite: 58] */
     background-color: #F0FDFA;
 }
 
 .publication-card h4 {
     font-family: 'Inter', sans-serif;
-    /* [cite: 63] */
     color: var(--primary-indigo);
-    /* [cite: 57] */
     font-size: 0.95rem;
     margin-bottom: 0.35rem;
 }
@@ -367,12 +349,11 @@ textarea:focus {
 
 .split-side {
     width: 50%;
-    /* [cite: 28] */
     height: 100%;
     display: flex;
     flex-direction: column;
     background-color: var(--grid-white);
-    /* [cite: 61] */
+   
 }
 
 .left-split-grid {
@@ -409,11 +390,8 @@ td {
 
 th {
     background-color: var(--canvas-gray);
-    /* [cite: 60] */
     font-family: 'Inter', sans-serif;
-    /* [cite: 63] */
     font-weight: 600;
-    /* [cite: 63] */
     position: sticky;
     top: 0;
     z-index: 10;
@@ -422,7 +400,6 @@ th {
 /* Rich-Text Composition UI Contexts [cite: 29] */
 .right-split-editor {
     background-color: var(--canvas-gray);
-    /* [cite: 60] */
     padding: 1rem;
     overflow-y: auto;
     /* Restores vertical writing editor scrolling */
@@ -430,7 +407,6 @@ th {
 
 .editor-workspace-card {
     background-color: var(--grid-white);
-    /* [cite: 61] */
     border-radius: 0.5rem;
     border: 1px solid var(--border-light);
     padding: 1.5rem;
@@ -488,18 +464,16 @@ th {
 
 .word-counter-widget {
     font-weight: 600;
-    /* [cite: 63] */
     font-size: 0.9rem;
 }
 
 .counter-val {
     color: var(--tech-teal);
-    /* [cite: 58] */
 }
 
 .counter-val.over-limit {
     color: var(--warning-crimson);
-    /* [cite: 59] */
+    
 }
 
 .checklist-widget {
@@ -508,19 +482,15 @@ th {
     gap: 0.25rem;
     font-size: 0.8rem;
     font-weight: 600;
-    /* [cite: 63] */
 }
 
 .chk-item {
     color: var(--warning-crimson);
 }
 
-/* [cite: 59] */
 .chk-item.passed {
     color: var(--tech-teal);
 }
-
-/* [cite: 58] */
 
 .disabled-state {
     opacity: 0.6;
@@ -582,13 +552,11 @@ th {
     .mobile-only-btn {
         display: block;
         background-color: var(--primary-indigo);
-        /* [cite: 57] */
         color: white;
         padding: 0.65rem;
         border: none;
         cursor: pointer;
         font-weight: 600;
-        /* [cite: 63] */
         text-align: center;
     }
 }
@@ -733,3 +701,10 @@ th {
     justify-content: flex-end;
     background-color: var(--canvas-gray);
 }
+.global-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+    font-size: 0.8rem;
+    color: #64748B;
+}   

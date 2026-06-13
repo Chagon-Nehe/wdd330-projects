@@ -1,0 +1,12 @@
+{
+  "name": "crh-cors-proxy",
+  "version": "1.0.0",
+  "description": "Pure Node.js CORS Proxy for Clinical Research Hub",
+  "main": "cors-proxy.js",
+  "scripts": {
+    "start": "node cors-proxy.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
