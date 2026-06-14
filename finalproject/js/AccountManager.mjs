@@ -1,97 +1,92 @@
 /**
- * AccountManager.mjs
- * Dedicated Client-Side Identity Provider & Session Controller Module
+ * Clinical Research Hub - Academic Authentication Manager (ES Module)
  */
+import { StorageEngine } from "./StorageEngine.mjs";
+
+const USERS_DB_KEY = "crh_users_db";
+const SESSION_KEY = "crh_user_session";
 
 export const AccountManager = {
-  currentUser: null,
-
   /**
-   * Initializes the manager by reading any active sessions persisted in local memory
-   * @returns {Object|null} The active user object if logged in, otherwise null
+   * Checks browser storage on startup to restore an existing session
    */
   init() {
-    const activeSession = localStorage.getItem("crh_user_session");
-    if (activeSession) {
-      this.currentUser = JSON.parse(activeSession);
-    } else {
-      this.currentUser = null;
+    // Automatically check if a database exists; if not, initialize an empty registry array
+    if (!StorageEngine.get(USERS_DB_KEY)) {
+      StorageEngine.set(USERS_DB_KEY, []);
     }
-    return this.currentUser;
   },
 
   /**
-   * Registers a new account slot inside the local storage mock database
-   * @param {string} email
-   * @param {string} password
-   * @returns {boolean} True if successful, false if account exists
+   * Registers a brand new user profile into the browser database
    */
   registerNewAccount(email, password) {
-    const database = JSON.parse(localStorage.getItem("crh_users_db") || "[]");
+    if (!email || !password) return false;
 
-    if (database.some((user) => user.email === email)) {
-      alert("An account with this email address already exists.");
-      return false;
-    }
+    const users = StorageEngine.get(USERS_DB_KEY) || [];
 
-    database.push({ email, password });
-    localStorage.setItem("crh_users_db", JSON.stringify(database));
-
-    // Auto sign-in upon account creation
-    return this.establishSession(email);
-  },
-
-  /**
-   * Verifies user credentials against the local storage mock database
-   * @param {string} email
-   * @param {string} password
-   * @returns {boolean} True if successful, false if credentials fail
-   */
-  verifyCredentialsAndLogin(email, password) {
-    const database = JSON.parse(localStorage.getItem("crh_users_db") || "[]");
-    const matchingUser = database.find(
-      (u) => u.email === email && u.password === password,
+    // Prevent duplicate user registrations
+    const userExists = users.some(
+      (u) => u.email.toLowerCase() === email.toLowerCase(),
     );
-
-    if (!matchingUser) {
-      alert("Invalid academic email or password credentials.");
+    if (userExists) {
+      alert(
+        "Registration Exception: An academic profile with this email address already exists.",
+      );
       return false;
     }
-    return this.establishSession(email);
-  },
 
-  /**
-   * Configures the browser session state tokens
-   * @param {string} email
-   * @returns {boolean}
-   */
-  establishSession(email) {
-    this.currentUser = { email, loginTimestamp: Date.now() };
-    localStorage.setItem("crh_user_session", JSON.stringify(this.currentUser));
+    // Add new profile and save using our storage engine module
+    users.push({ email, password });
+    StorageEngine.set(USERS_DB_KEY, users);
+
+    // Auto-login the user immediately upon successful registration
+    StorageEngine.set(SESSION_KEY, { email });
     return true;
   },
 
   /**
-   * Terminates the active user context profile instantly
+   * Verifies typed credentials against the stored user database records
    */
-  terminateSession() {
-    this.currentUser = null;
-    localStorage.removeItem("crh_user_session");
+  verifyCredentialsAndLogin(email, password) {
+    const users = StorageEngine.get(USERS_DB_KEY) || [];
+
+    const matchingUser = users.find(
+      (u) =>
+        u.email.toLowerCase() === email.toLowerCase() &&
+        u.password === password,
+    );
+
+    if (!matchingUser) {
+      alert(
+        "Authentication Denied: Invalid academic email or security password.",
+      );
+      return false;
+    }
+
+    // Commit active session state
+    StorageEngine.set(SESSION_KEY, { email: matchingUser.email });
+    return true;
   },
 
   /**
-   * Helper to determine security visibility permissions
-   * @returns {boolean}
+   * Evaluates whether a user token is currently alive in browser memory
    */
   isAuthenticated() {
-    return this.currentUser !== null;
+    return StorageEngine.get(SESSION_KEY) !== null;
   },
 
   /**
-   * Gets the authenticated user details
-   * @returns {Object|null}
+   * Returns the active user account metadata profile details
    */
   getCurrentUser() {
-    return this.currentUser;
+    return StorageEngine.get(SESSION_KEY);
+  },
+
+  /**
+   * Clears user tokens out of memory to close secure view channels
+   */
+  terminateSession() {
+    StorageEngine.remove(SESSION_KEY);
   },
 };

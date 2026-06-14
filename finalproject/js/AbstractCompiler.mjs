@@ -1,52 +1,74 @@
-import { StorageEngine } from "./StorageEngine.mjs";
-
-const ABSTRACT_STORAGE_KEY = "cr_hub_abstract_draft";
-
+/**
+ * Clinical Research Hub - Natural Language Literature Heuristics Compiler (ES Module)
+ */
 export const AbstractCompiler = {
-  // Structural requirements map across major global health journal rulesets
-  journalRulesets: {
-    nature: { maxWords: 300, requireStructure: true },
-    lancet: { maxWords: 250, requireStructure: true },
-    nejm: { maxWords: 200, requireStructure: false },
-  },
-
-  /** Save abstract drafts in real time to prevent loss from browser refreshes */
-  async backupDraftState(
-    title,
-    intro,
-    methods,
-    results,
-    conclusion,
-    activeJournal,
-  ) {
-    const draftPayload = {
-      title,
-      intro,
-      methods,
-      results,
-      conclusion,
-      activeJournal,
+  /**
+   * Algorithmic routine scanning text layers to parse trial variables and methodologies
+   * @param {string} text - Combined publication title and abstract string
+   * @returns {Object} Structured data parameters template
+   */
+  parseClinicalParametersFromAbstract(text) {
+    // Fallback structural initialization for blank or invalid records
+    const fallbackTemplate = {
+      sampleSize: "",
+      methodology: "Unspecified Study Design",
+      intervention: "Review full abstract parameters.",
+      endpoints:
+        "Review structured sections inside reading modal popup windows.",
     };
-    await StorageEngine.set(ABSTRACT_STORAGE_KEY, draftPayload);
-  },
 
-  async getSavedDraft() {
-    return await StorageEngine.get(ABSTRACT_STORAGE_KEY);
-  },
+    if (!text || typeof text !== "string") return fallbackTemplate;
 
-  /** Evaluate length targets and count metrics within string arrays */
-  evaluateMetrics(textString, targetJournal) {
-    const cleanArr = textString
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
-    const currentCount = cleanArr.length;
-    const targetLimit = this.journalRulesets[targetJournal]?.maxWords || 300;
+    // Sanitize string to flatten line breaks for unhindered regex lookaheads
+    const cleanText = text.replace(/\n/g, " ");
+    let derivedSampleSize = "";
+
+    // Multi-tier regular expression heuristics checking sample patterns
+    const sampleSizeRegexes = [
+      /(?:n\s*=\s*|sample size of\s*|enrolled\s*|cohort of\s*|total of\s*)(\d{1,6})\b/i,
+      /(\d{1,6})\s*(?:participants|patients|subjects|healthy volunteers|cases|individuals)/i,
+    ];
+
+    for (let regex of sampleSizeRegexes) {
+      const match = cleanText.match(regex);
+      if (match && match[1]) {
+        derivedSampleSize = parseInt(match[1], 10);
+        break;
+      }
+    }
+
+    // Taxonomy analysis loop sorting study designs
+    let derivedMethodology = "Clinical Study (Unspecified)";
+    const lowerText = cleanText.toLowerCase();
+
+    if (
+      lowerText.includes("randomized controlled trial") ||
+      lowerText.includes("randomised controlled trial")
+    ) {
+      derivedMethodology = "Randomized Controlled Trial (RCT)";
+    } else if (
+      lowerText.includes("meta-analysis") ||
+      lowerText.includes("systematic review")
+    ) {
+      derivedMethodology = "Systematic Review & Meta-Analysis";
+    } else if (lowerText.includes("case-control study")) {
+      derivedMethodology = "Case-Control Observational Study";
+    } else if (lowerText.includes("cross-sectional study")) {
+      derivedMethodology = "Cross-Sectional Observational Study";
+    } else if (
+      lowerText.includes("cohort study") ||
+      lowerText.includes("retrospective cohort")
+    ) {
+      derivedMethodology = "Cohort Observational Study";
+    } else if (lowerText.includes("longitudinal study")) {
+      derivedMethodology = "Longitudinal Study Framework";
+    }
 
     return {
-      wordCount: currentCount,
-      limit: targetLimit,
-      isSafeLength: currentCount <= targetLimit,
+      sampleSize: derivedSampleSize,
+      methodology: derivedMethodology,
+      intervention: "Pending operational logging...",
+      endpoints: "Pending endpoints variable confirmation...",
     };
   },
 };

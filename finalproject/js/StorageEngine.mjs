@@ -1,42 +1,44 @@
 /**
- * Unified Asynchronous Local Client Cache Interface Module
+ * Clinical Research Hub - Persistent Browser Storage Engine (ES Module)
  */
 export const StorageEngine = {
   /**
-   * Store and stringify a deep state configuration payload object
-   * @param {string} key
-   * @param {Object|Array} data
+   * Safely retrieves and parses a JSON object from localStorage
+   * @param {string} key - The browser storage key
+   * @returns {*} Parsed data object, array, or null if empty/invalid
    */
-  async set(key, data) {
+  get(key) {
     try {
-      localStorage.setItem(key, JSON.stringify(data));
-      return true;
-    } catch (e) {
-      console.error("Storage write operational anomaly:", e);
-      return false;
-    }
-  },
-
-  /**
-   * Retrieve and unpack data strings back to model arrays/objects
-   * @param {string} key
-   */
-  async get(key) {
-    try {
-      const payload = localStorage.getItem(key);
-      return payload ? JSON.parse(payload) : null;
-    } catch (e) {
-      console.error("Storage fetch parsing variance:", e);
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error(`StorageEngine Error reading key "${key}":`, error);
       return null;
     }
   },
 
   /**
-   * Wipe a targeted storage partition sector clear
-   * @param {string} key
+   * Converts data to a JSON string and commits it to localStorage
+   * @param {string} key - The browser storage key
+   * @param {*} value - The data structure to save
    */
-  async clear(key) {
-    localStorage.removeItem(key);
-    return true;
+  set(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`StorageEngine Error writing key "${key}":`, error);
+    }
+  },
+
+  /**
+   * Permanently drops a key-value record out of storage
+   * @param {string} key - The browser storage key
+   */
+  remove(key) {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`StorageEngine Error removing key "${key}":`, error);
+    }
   },
 };

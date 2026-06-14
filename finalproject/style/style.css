@@ -1,7 +1,7 @@
-/* Custom Palette Definitions & System Typography Rules [cite: 55, 56] */
+/* Custom Palette Definitions & System Typography Rules   */
 :root {
     --primary-indigo: #1E3A8A;
-    --tech-teal: #0F766E;
+    --tech-teal: #0F766E
     --warning-crimson: #BE123C;
     --canvas-gray: #F1F5F9;
     --grid-white: #FFFFFF;
@@ -35,7 +35,7 @@ table {
    
 }
 
-/* Global Navigation Top Header Component [cite: 57] */
+/* Global Navigation Top Header Component  */
 .global-header {
     background-color: var(--primary-indigo);
     color: var(--grid-white);
@@ -55,7 +55,7 @@ table {
     gap: 0.75rem;
 }
 
-/* Live Custom Branded App Icon [cite: 65, 66] */
+/* Live Custom Branded App Icon  */
 .app-icon {
     width: 50px;
     height: 50px;
@@ -263,7 +263,6 @@ textarea:focus {
     padding: 0.625rem 1rem;
     border-radius: 0.375rem;
     font-weight: 600;
-    /* [cite: 63] */
     cursor: pointer;
     text-align: center;
 }
@@ -341,7 +340,7 @@ textarea:focus {
     color: #334155;
 }
 
-/* Split-Screen Composition Grid (Workspace View) [cite: 28] */
+/* Split-Screen Composition Grid (Workspace View)  */
 #view-workspace.active-view {
     display: flex;
     height: 100%;
@@ -368,7 +367,7 @@ textarea:focus {
     border-bottom: 1px solid var(--border-light);
 }
 
-/* Spreadsheet Structural Elements [cite: 15] */
+/* Spreadsheet Structural Elements */
 .table-scroll-wrap {
     flex: 1;
     overflow: auto;
@@ -397,7 +396,7 @@ th {
     z-index: 10;
 }
 
-/* Rich-Text Composition UI Contexts [cite: 29] */
+/* Rich-Text Composition UI Contexts  */
 .right-split-editor {
     background-color: var(--canvas-gray);
     padding: 1rem;
@@ -418,7 +417,7 @@ th {
 
 .journal-target-bar {
     background-color: var(--canvas-gray);
-    /* [cite: 60] */
+    
     padding: 0.75rem;
     border-radius: 0.375rem;
     display: flex;
@@ -429,7 +428,7 @@ th {
 .title-field {
     font-size: 1.15rem;
     font-weight: 600;
-    /* [cite: 63] */
+    
 }
 
 .structured-section-block {
@@ -442,7 +441,7 @@ th {
     font-size: 0.75rem;
     text-transform: uppercase;
     font-weight: 700;
-    /* [cite: 63] */
+    
     color: #64748B;
     letter-spacing: 0.05em;
 }
@@ -453,7 +452,7 @@ th {
     line-height: 1.5;
 }
 
-/* Checklist and Metric Compliance Widgets [cite: 29] */
+/* Checklist and Metric Compliance Widgets */
 .editor-compliance-footer {
     border-top: 1px solid var(--border-light);
     padding-top: 1rem;
@@ -503,8 +502,8 @@ th {
     display: none;
 }
 
-/* Responsive Engines & Overlays Configuration [cite: 21] */
-@media (max-width: 1024px) {
+/* Responsive Engines & Overlays Configuration  */
+@media (max-width: 768px) {
     .hero-section {
         flex-direction: column;
         text-align: center;
@@ -559,6 +558,29 @@ th {
         font-weight: 600;
         text-align: center;
     }
+
+        /* Mobile Responsive Drawer Overlay Layer Rules */
+        @media (max-width: 768px) {
+            #panel-filters {
+                display: none;
+                /* Collapsed by default on mobile screens */
+                position: fixed;
+                top: 60px;
+                left: 0;
+                width: 100%;
+                height: calc(100vh - 60px);
+                background: #ffffff;
+                z-index: 999;
+                padding: 1.5rem;
+                box-sizing: border-box;
+                overflow-y: auto;
+            }
+    
+            /* Activated by the JS toggleMobileFilterPane event trigger */
+            #panel-filters.filters-visible-mobile {
+                display: block !important;
+            }
+        }
 }
 
 /* ==========================================================================
@@ -708,3 +730,4 @@ th {
     font-size: 0.8rem;
     color: #64748B;
 }   
+

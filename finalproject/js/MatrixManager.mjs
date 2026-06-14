@@ -1,73 +1,63 @@
-import { StorageEngine } from "./StorageEngine.mjs";
-
-const MATRIX_STORAGE_KEY = "cr_hub_matrix_data";
-
+/**
+ * Clinical Research Hub - Data Matrix Spreadsheet Manager (ES Module)
+ */
 export const MatrixManager = {
-  // In-memory application tracking cache
-  activeMatrixMemory: {},
+  /**
+   * Commits a validated data extraction record row directly into the state mapping cache
+   * @param {Map} cacheMap - The central StateManager.matrixCache map reference
+   * @param {string} pmid - Unique publication tracking ID
+   * @param {Object} dataRow - Collected data matrix variables
+   */
+  saveRowToCache(cacheMap, pmid, dataRow) {
+    if (!pmid) return;
 
-  /** Load operational memory blocks from localized file persistence layers */
-  async initializeMatrixState() {
-    const cached = await StorageEngine.get(MATRIX_STORAGE_KEY);
-    if (cached) {
-      this.activeMatrixMemory = cached;
-    }
-  },
-
-  /** Extract data fields safely from text fields and save into global matrices */
-  async updateMatrixEntry(
-    pmid,
-    sampleSize,
-    methodology,
-    intervention,
-    endpoints,
-  ) {
-    // Mitigate disruptive external string formatting variances using standard default fallbacks
-    this.activeMatrixMemory[pmid] = {
-      pmid,
-      sampleSize: parseInt(sampleSize) || 0,
-      methodology: methodology.trim() || "Unspecified",
-      intervention: intervention.trim() || "Not Documented",
-      endpoints: endpoints.trim() || "N/A",
-    };
-
-    await StorageEngine.set(MATRIX_STORAGE_KEY, this.activeMatrixMemory);
-  },
-
-  /** Fetch operational data rows targeting individual paper IDs */
-  getEntry(pmid) {
-    return this.activeMatrixMemory[pmid] || null;
-  },
-
-  getAllEntries() {
-    return Object.values(this.activeMatrixMemory);
+    // Ensure structure alignment before saving
+    cacheMap.set(pmid, {
+      pmid: String(pmid),
+      sampleSize: dataRow.sampleSize || "N/A",
+      methodology: dataRow.methodology || "Unspecified Study",
+      intervention: dataRow.intervention || "Not Specified",
+      endpoints: dataRow.endpoints || "No endpoints logged.",
+    });
   },
 
   /**
-   * Transform in-memory structured JSON records straight into a downloadable CSV string asset
+   * Wipes and rebuilds the spreadsheet table UI grid inside the Abstract Workspace tab
+   * @param {HTMLElement} targetTableBody - The DOM node reference for the <tbody> container
+   * @param {Map} cacheMap - The central StateManager.matrixCache map reference
    */
-  generateCSVBlobString() {
-    const entries = this.getAllEntries();
-    if (entries.length === 0)
-      return "PMID,SampleSize,Methodology,Intervention,PrimaryEndpoints\n";
+  rebuildSpreadsheetGridUI(targetTableBody, cacheMap) {
+    if (!targetTableBody) return;
 
-    const csvHeaders = [
-      "PMID",
-      "Sample Size",
-      "Methodology",
-      "Intervention",
-      "Primary Endpoints",
-    ];
-    const csvRows = entries.map((e) =>
-      [
-        `"${e.pmid}"`,
-        `"${e.sampleSize}"`,
-        `"${e.methodology.replace(/"/g, '""')}"`,
-        `"${e.intervention.replace(/"/g, '""')}"`,
-        `"${e.endpoints.replace(/"/g, '""')}"`,
-      ].join(","),
-    );
+    // Clear existing rows
+    targetTableBody.innerHTML = "";
 
-    return [csvHeaders.join(","), ...csvRows].join("\n");
+    // Render Empty State if no matrices have been saved yet
+    if (!cacheMap || cacheMap.size === 0) {
+      targetTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center; color:#64748B; padding: 2rem; font-style: italic;">
+                        No records compiled in your matrix spreadsheet yet. Select an article card to begin extraction.
+                    </td>
+                </tr>`;
+      return;
+    }
+
+    // Dynamically build and inject table grid row fragments
+    cacheMap.forEach((row) => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+                <td><strong>${row.pmid}</strong></td>
+                <td><span class="badge-sample-size">${row.sampleSize}</span></td>
+                <td><small>${row.methodology}</small></td>
+                <td>${row.intervention}</td>
+                <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${row.endpoints}">
+                    ${row.endpoints}
+                </td>
+            `;
+
+      targetTableBody.appendChild(tr);
+    });
   },
 };

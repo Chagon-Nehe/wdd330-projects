@@ -1,10 +1,13 @@
 /**
  * Clinical Research Hub - Core Application Controller (ES Module)
  */
-
 import { PubMedService } from "./PubMedService.mjs";
-// Import your new Account Management module
 import { AccountManager } from "./AccountManager.mjs";
+
+// IMPORTING YOUR TARGET CODE MODULES SUCCESSFULLY
+import { MatrixManager } from "./MatrixManager.mjs";
+import { AbstractCompiler } from "./AbstractCompiler.mjs"; // Interacts with structural parser logic
+//import { SemanticScholarService } from "./SemanticScholarService.mjs"; // Cross-database search framework
 
 // 1. RUNNING STATE CONFIGURATION MODEL
 const StateManager = {
@@ -28,6 +31,10 @@ const DOM = {
   feedContainer: document.getElementById("feed-container"),
   resultsCount: document.getElementById("results-count"),
 
+  // MOBILE FILTER DRAWER TARGET (Matches your index.html button and aside panel)
+  mobileFilterTrigger: document.getElementById("mobile-filter-trigger"),
+  panelFilters: document.getElementById("panel-filters"),
+
   // Matrix Fields
   panelMatrixPane: document.getElementById("panel-matrix-pane"),
   matrixFormContainer: document.getElementById("matrix-form-container"),
@@ -38,6 +45,9 @@ const DOM = {
   mIntervention: document.getElementById("m-intervention"),
   mEndpoints: document.getElementById("m-endpoints"),
   quickSaveBtn: document.getElementById("quick-save-matrix"),
+
+  // EXPORT ACTION TARGET (Matches your exact index.html ID)
+  exportMatrixCsv: document.getElementById("export-matrix-csv"),
 
   // Reading Preview Overlays
   pubModal: document.getElementById("publication-modal"),
@@ -68,8 +78,8 @@ let currentAuthMode = "signin";
 
 // 3. CORE CONTROLLER INITIALIZATION FLOW
 function initApplication() {
-  AccountManager.init(); // Initialize the account module
-  syncAuthenticationUIElements(); // Bind UI constraints based on module response
+  AccountManager.init();
+  syncAuthenticationUIElements();
   setupEventPipelines();
   console.log(
     "Modular Clinical Research Hub App Dashboard Orchestrator Online.",
@@ -85,6 +95,18 @@ function setupEventPipelines() {
     switchPrimaryView("workspace"),
   );
   DOM.searchForm.addEventListener("submit", handleLiteratureSearch);
+
+  // MOBILE INTERFACE EVENT TRAFFIC PIPELINES
+  if (DOM.mobileFilterTrigger) {
+    DOM.mobileFilterTrigger.addEventListener("click", toggleMobileFilterPane);
+  }
+
+  if (DOM.exportMatrixCsv) {
+    DOM.exportMatrixCsv.addEventListener("click", (e) => {
+      e.preventDefault();
+      exportToCSV();
+    });
+  }
 
   // Publication Lightbox Bindings
   DOM.closeModalBtn.addEventListener("click", () =>
@@ -112,8 +134,48 @@ function setupEventPipelines() {
     if (e.target === DOM.authModal) closeAuthenticationModal();
   });
 
-  // Matrix Commit Synchronization Action
+  // Matrix Commit Synchronization Action Delegated to Module
   DOM.quickSaveBtn.addEventListener("click", commitFormMetricsToStateCache);
+}
+
+// MOBILE DRAWER DOM UTILITY
+function toggleMobileFilterPane() {
+    if (DOM.panelFilters) {
+        DOM.panelFilters.classList.toggle("filters-visible-mobile");
+    }
+}
+
+// MOBILE CONTEXT SAFE CONVERT AND DOWNLOAD DRIVER
+function exportToCSV() {
+    if (!StateManager.matrixCache || StateManager.matrixCache.size === 0) {
+        alert("Your spreadsheet matrix cache is empty. Please log parameters first.");
+        return;
+    }
+
+    let csvString = "PMID,Sample Size,Methodology,Intervention,Endpoints\n";
+    
+    StateManager.matrixCache.forEach((row) => {
+        const cleanSample = String(row.sampleSize || "N/A").replace(/"/g, '""');
+        const cleanMethod = String(row.methodology || "N/A").replace(/"/g, '""');
+        const cleanIntervention = String(row.intervention || "N/A").replace(/"/g, '""');
+        const cleanEndpoints = String(row.endpoints || "N/A").replace(/"/g, '""');
+        
+        csvString += `${row.pmid},"${cleanSample}","${cleanMethod}","${cleanIntervention}","${cleanEndpoints}"\n`;
+    });
+
+    const csvBlob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const virtualLink = document.createElement("a");
+    
+    // Fallback layer resolving native sandbox container limits on mobile web views
+    const fileBlobUrl = URL.createObjectURL(csvBlob);
+    virtualLink.href = fileBlobUrl;
+    virtualLink.setAttribute("download", "clinical_matrix_synthesis.csv");
+    
+    document.body.appendChild(virtualLink);
+    virtualLink.click();
+    
+    document.body.removeChild(virtualLink);
+    URL.revokeObjectURL(fileBlobUrl);
 }
 
 // 5. SECURITY SWITCH SHIELDS & UI MIRRORING
@@ -151,7 +213,6 @@ function syncAuthenticationUIElements() {
 }
 
 function switchPrimaryView(targetView) {
-  // Utilize module security check
   if (targetView === "workspace" && !AccountManager.isAuthenticated()) {
     openAuthenticationModal();
     alert(
@@ -171,7 +232,12 @@ function switchPrimaryView(targetView) {
     DOM.navDashboard.classList.remove("active");
     DOM.viewWorkspace.classList.add("active-view");
     DOM.viewDashboard.classList.remove("active-view");
-    rebuildSpreadsheetGridUI();
+
+    // MODULAR UPDATES: Utilizing MatrixManager module to render table grid elements
+    MatrixManager.rebuildSpreadsheetGridUI(
+      DOM.spreadsheetBody,
+      StateManager.matrixCache,
+    );
   }
 }
 
@@ -193,7 +259,7 @@ function handleAuthenticationFormSubmission(e) {
   if (successfulAction) {
     DOM.authForm.reset();
     closeAuthenticationModal();
-    syncAuthenticationUIElements(); // Update application layout state variables immediately
+    syncAuthenticationUIElements();
   }
 }
 
@@ -215,7 +281,6 @@ function loadTargetPaperIntoMatrixPane(paper) {
     paper.abstract || "Full abstract text block unavailable.";
   DOM.pubModal.classList.add("modal-active");
 
-  // Utilize module security check
   if (!AccountManager.isAuthenticated()) {
     console.log(
       "Anonymous Reader Pipeline tracking triggered. Extraction Matrix form write skipped.",
@@ -229,8 +294,10 @@ function loadTargetPaperIntoMatrixPane(paper) {
   DOM.mTitle.value = paper.title || "Untitled Document";
 
   const textToAnalyze = `${paper.title} ${paper.abstract || ""}`;
+
+  // MODULAR Offload regex parameters parsing to AbstractCompiler
   const automatedExtraction =
-    parseClinicalParametersFromAbstract(textToAnalyze);
+    AbstractCompiler.parseClinicalParametersFromAbstract(textToAnalyze);
   const existingCache = StateManager.matrixCache.get(paper.pmid);
 
   DOM.mSample.value = existingCache
@@ -294,23 +361,45 @@ function toggleAuthenticationContextMode(e) {
   }
 }
 
-// 7. REST OF RENDER ENGINE METHODS RE-EXPORTED SAFELY
+// 7. MULTI-SERVICE ENGINE LOOKUP SEARCH PIPELINE
 async function handleLiteratureSearch(event) {
   event.preventDefault();
   const query = DOM.searchInput.value.trim();
-  DOM.resultsCount.textContent = "Querying live servers...";
+  DOM.resultsCount.textContent = "Cross-querying database records...";
   DOM.feedContainer.innerHTML =
-    '<div class="empty-state">Streaming matching clinical trials from PubMed...</div>';
+    '<div class="empty-state">Streaming tracking datasets from integrated providers...</div>';
 
   try {
-    const publications = await PubMedService.fetchPublications(query);
-    StateManager.discoveryFeed = publications;
+    // MODULAR UPDATES: Simultaneously stream query arrays from BOTH PubMed and SemanticScholar systems!
+    const [pubmedResults, semanticResults] = await Promise.allSettled([
+      PubMedService.fetchPublications(query) /*,
+      SemanticScholarService.fetchPublications(query),*/,
+    ]);
+
+    let combinedPublications = [];
+    if (pubmedResults.status === "fulfilled")
+      combinedPublications.push(...pubmedResults.value); /*
+    if (semanticResults.status === "fulfilled")
+      combinedPublications.push(...semanticResults.value);*/
+
+    // Filter duplicates based on unique PMIDs or titles if cross-listed
+    const uniqueMap = new Map();
+    combinedPublications.forEach((paper) =>
+      uniqueMap.set(paper.pmid || paper.title.toLowerCase(), paper),
+    );
+
+    StateManager.discoveryFeed = Array.from(uniqueMap.values());
     renderDiscoveryFeedList();
+
+    // Close mobile side drawer automatically when executing query search
+    if (DOM.panelFilters) {
+      DOM.panelFilters.classList.remove("filters-visible-mobile");
+    }
   } catch (error) {
     console.error("Discovery Pipeline Failure:", error);
-    DOM.resultsCount.textContent = "Error running query";
+    DOM.resultsCount.textContent = "Error running multi-service query";
     DOM.feedContainer.innerHTML =
-      '<div class="empty-state" style="color: var(--warning-crimson);">Query failure. Check proxy authentication pass layers.</div>';
+      '<div class="empty-state" style="color: var(--warning-crimson);">Query failure inside search aggregation layers.</div>';
   }
 }
 
@@ -344,6 +433,8 @@ function renderDiscoveryFeedList() {
 
 function commitFormMetricsToStateCache() {
   if (!StateManager.currentPmid) return;
+
+  // MODULAR UPDATES: Offload data construction and structural validation handling to MatrixManager
   const updatedRow = {
     pmid: StateManager.currentPmid,
     sampleSize: DOM.mSample.value,
@@ -351,7 +442,13 @@ function commitFormMetricsToStateCache() {
     intervention: DOM.mIntervention.value,
     endpoints: DOM.mEndpoints.value,
   };
-  StateManager.matrixCache.set(StateManager.currentPmid, updatedRow);
+
+  MatrixManager.saveRowToCache(
+    StateManager.matrixCache,
+    StateManager.currentPmid,
+    updatedRow,
+  );
+
   const originalText = DOM.quickSaveBtn.textContent;
   DOM.quickSaveBtn.textContent = "Saved! ✓";
   DOM.quickSaveBtn.style.backgroundColor = "#059669";
@@ -361,57 +458,5 @@ function commitFormMetricsToStateCache() {
   }, 1500);
 }
 
-function rebuildSpreadsheetGridUI() {
-  DOM.spreadsheetBody.innerHTML = "";
-  if (StateManager.matrixCache.size === 0) {
-    DOM.spreadsheetBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748B;">No records compiled in your matrix spreadsheet yet.</td></tr>`;
-    return;
-  }
-  StateManager.matrixCache.forEach((row) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td><strong>${row.pmid}</strong></td><td>${row.sampleSize || "N/A"}</td><td>${row.methodology}</td><td>${row.intervention}</td><td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${row.endpoints}</td>`;
-    DOM.spreadsheetBody.appendChild(tr);
-  });
-}
-
-function parseClinicalParametersFromAbstract(text) {
-  if (!text)
-    return {
-      sampleSize: "",
-      methodology: "Unspecified Study",
-      intervention: "Not Specified",
-      endpoints: "No text block.",
-    };
-  const cleanText = text.replace(/\n/g, " ");
-  let derivedSampleSize = null;
-  const sampleSizeRegexes = [
-    /(?:n\s*=\s*|sample size of\s*|enrolled\s*|cohort of\s*)(\d{1,6})\b/i,
-    /(\d{1,6})\s*(?:participants|patients|subjects|healthy volunteers|cases)/i,
-  ];
-  for (let regex of sampleSizeRegexes) {
-    const match = cleanText.match(regex);
-    if (match && match[1]) {
-      derivedSampleSize = parseInt(match[1]);
-      break;
-    }
-  }
-  let derivedMethodology = "Clinical Study (Unspecified)";
-  if (
-    cleanText.toLowerCase().includes("randomized controlled trial") ||
-    cleanText.toLowerCase().includes("randomised controlled trial")
-  )
-    derivedMethodology = "Randomized Controlled Trial (RCT)";
-  else if (cleanText.toLowerCase().includes("meta-analysis"))
-    derivedMethodology = "Systematic Review & Meta-Analysis";
-  else if (cleanText.toLowerCase().includes("cohort study"))
-    derivedMethodology = "Cohort Observational Study";
-
-  return {
-    sampleSize: derivedSampleSize,
-    methodology: derivedMethodology,
-    intervention: "Parsed from abstract contextual parameters.",
-    endpoints: "Review structural sections inside reading modal popup windows.",
-  };
-}
-
+// Trigger Application Launch
 initApplication();

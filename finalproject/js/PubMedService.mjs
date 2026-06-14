@@ -3,7 +3,7 @@
  * Enhanced with CORS Proxying, Defensive Validation, and Structured XML Abstract Parsers
  */
 export const PubMedService = {
-  // 1. TRY SETTING THIS TO "" TO TEST IF YOUR KEY IS THE PROBLEM
+  //API key for NCBI E-Utilities (optional but recommended for higher rate limits)
   API_KEY: "bc724ddfe74bd662d6c4036dbb4401f38108",
 
   // CORS Anywhere proxy modifier to bypass browser origin blocks locally
@@ -14,7 +14,7 @@ export const PubMedService = {
    * @param {string} rawQuery Terms passed from input fields
    */
   async fetchPublications(rawQuery) {
-    // 2. DEFENSIVE CHECK: Ensure we actually have a query string
+    // DEFENSIVE CHECK: Ensure we actually have a query string
     if (!rawQuery || rawQuery.trim() === "") {
       console.warn("PubMedService: Search query was empty. Aborting request.");
       return [];
@@ -24,11 +24,11 @@ export const PubMedService = {
       const encodedQuery = encodeURIComponent(rawQuery);
       const authParam = this.API_KEY ? `&api_key=${this.API_KEY}` : "";
 
-      // Step 1: Execute E-Search via Proxy to acquire matching PMIDs
+      // Step Execute E-Search via Proxy to acquire matching PMIDs
       const searchUrl = `${this.PROXY_URL}https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=${encodedQuery}&retmode=json&retmax=10${authParam}`;
       const searchResponse = await fetch(searchUrl);
 
-      // 3. DETECT 400 BAD REQUESTS / PROXY FAILURES HERE
+      // DETECT 400 BAD REQUESTS / PROXY FAILURES HERE
       if (!searchResponse.ok) {
         const errorText = await searchResponse.text();
         console.error(
@@ -84,7 +84,7 @@ export const PubMedService = {
     };
 
     try {
-      // Step 2a: Fetch Basic Bibliographic Data from ESummary via Proxy (JSON)
+      // Fetch Basic Bibliographic Data from ESummary via Proxy (JSON)
       const summaryUrl = `${this.PROXY_URL}https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${pmid}&retmode=json${authParam}`;
       const summaryResponse = await fetch(summaryUrl);
 
@@ -127,7 +127,7 @@ export const PubMedService = {
         }
       }
 
-      // Step 2b: Fetch Long-form Abstracts & MeSH terms from EFetch via Proxy (XML API Route)
+      // Fetch Long-form Abstracts & MeSH terms from EFetch via Proxy (XML API Route)
       const fetchUrl = `${this.PROXY_URL}https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=${pmid}&retmode=xml${authParam}`;
       const fetchResponse = await fetch(fetchUrl);
 
