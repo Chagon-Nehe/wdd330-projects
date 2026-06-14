@@ -67,8 +67,8 @@ export const AbstractCompiler = {
     return {
       sampleSize: derivedSampleSize,
       methodology: derivedMethodology,
-      intervention: "Pending operational logging...",
-      endpoints: "Pending endpoints variable confirmation...",
+      intervention: "" ||"type in...",
+      endpoints: " " || "type in...",
     };
   },
 };
