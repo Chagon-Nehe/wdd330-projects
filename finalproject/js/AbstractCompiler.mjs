@@ -12,8 +12,8 @@ export const AbstractCompiler = {
     const fallbackTemplate = {
       sampleSize: "",
       methodology: "Unspecified Study Design",
-      intervention: "Review full abstract parameters.",
-      endpoints:
+      intervention: " " || "Review full abstract parameters.",
+      endpoints: " " ||
         "Review structured sections inside reading modal popup windows.",
     };
 
