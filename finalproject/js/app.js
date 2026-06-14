@@ -233,7 +233,7 @@ function switchPrimaryView(targetView) {
     DOM.viewWorkspace.classList.add("active-view");
     DOM.viewDashboard.classList.remove("active-view");
 
-    // MODULAR UPDATES: Utilizing MatrixManager module to render table grid elements
+    // MODULAR Utilizing MatrixManager module to render table grid elements
     MatrixManager.rebuildSpreadsheetGridUI(
       DOM.spreadsheetBody,
       StateManager.matrixCache,
