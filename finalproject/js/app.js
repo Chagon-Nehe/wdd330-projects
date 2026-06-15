@@ -70,8 +70,21 @@ const DOM = {
   headerLoginTriggerBtn: document.getElementById("header-login-trigger-btn"),
   headerLogoutBtn: document.getElementById("header-logout-btn"),
 
-  // Spreadsheet Workspace Framework
+  // Ensure these are inside your DOM object cache:
+  journalRuleSelect: document.getElementById("journal-rule-select"),
+  abstractTitle: document.getElementById("abstract-title"),
+  secIntroduction: document.getElementById("sec-introduction"),
+  secMethods: document.getElementById("sec-methods"),
+  secResults: document.getElementById("sec-results"),
+  secConclusion: document.getElementById("sec-conclusion"),
+  wordCountDisplay: document.getElementById("word-count-display"),
+  wordLimitDisplay: document.getElementById("word-limit-display"),
+  chkHeadings: document.getElementById("chk-headings"),
+  chkLength: document.getElementById("chk-length"),
+
+  // Spreadsheet and document Workspace Framework
   spreadsheetBody: document.getElementById("spreadsheet-body"),
+  exportAbstractDoc: document.getElementById("export-abstract-doc"),
 };
 
 let currentAuthMode = "signin";
@@ -96,6 +109,12 @@ function setupEventPipelines() {
   );
   DOM.searchForm.addEventListener("submit", handleLiteratureSearch);
 
+  if (DOM.exportAbstractDoc) {
+    DOM.exportAbstractDoc.addEventListener("click", (e) => {
+      e.preventDefault();
+      exportAbstractToDocx();
+    });
+  }
   // MOBILE INTERFACE EVENT TRAFFIC PIPELINES
   if (DOM.mobileFilterTrigger) {
     DOM.mobileFilterTrigger.addEventListener("click", toggleMobileFilterPane);
@@ -119,6 +138,36 @@ function setupEventPipelines() {
     if (e.target === DOM.pubModal)
       DOM.pubModal.classList.remove("modal-active");
   });
+
+  
+
+  //  LISTEN FOR TYPING & DROPDOWN CHANGES TO EVALUATE MANUSCRIPT METRICS
+  const manuscriptInputs = [
+    DOM.abstractTitle,
+    DOM.secIntroduction,
+    DOM.secMethods,
+    DOM.secResults,
+    DOM.secConclusion,
+  ];
+
+  manuscriptInputs.forEach((inputElement) => {
+    if (inputElement) {
+      inputElement.addEventListener(
+        "input",
+        runLiveCompositionCompilerPipeline,
+      );
+    }
+  });
+
+  if (DOM.journalRuleSelect) {
+    DOM.journalRuleSelect.addEventListener(
+      "change",
+      runLiveCompositionCompilerPipeline,
+    );
+  }
+
+  // RESTORE SAVED DRAFT STATE AUTOMATICALLY ON BOOTUP
+  restoreCachedManuscriptDraft();
 
   // Authentication Dialog Actions
   DOM.headerLoginTriggerBtn.addEventListener("click", openAuthenticationModal);
@@ -145,7 +194,7 @@ function toggleMobileFilterPane() {
     }
 }
 
-// MOBILE CONTEXT SAFE CONVERT AND DOWNLOAD DRIVER
+
 function exportToCSV() {
     if (!StateManager.matrixCache || StateManager.matrixCache.size === 0) {
         alert("Your spreadsheet matrix cache is empty. Please log parameters first.");
@@ -434,7 +483,7 @@ function renderDiscoveryFeedList() {
 function commitFormMetricsToStateCache() {
   if (!StateManager.currentPmid) return;
 
-  // MODULAR UPDATES: Offload data construction and structural validation handling to MatrixManager
+  // MODULAR Offload data construction and structural validation handling to MatrixManager
   const updatedRow = {
     pmid: StateManager.currentPmid,
     sampleSize: DOM.mSample.value,
@@ -460,3 +509,152 @@ function commitFormMetricsToStateCache() {
 
 // Trigger Application Launch
 initApplication();
+
+
+
+
+/**
+ * Compiles structured abstract text inputs into an XML-wrapped document blob
+ * and triggers a native file download formatted for Microsoft Word (.docx)
+ */
+function exportAbstractToDocx() {
+    // 1. Fetch values from fields or assign clean fallbacks if empty
+    const docTitle = DOM.abstractTitle?.value.trim() || "Untitled Manuscript Abstract Draft";
+    const introText = DOM.secIntroduction?.value.trim() || "No background text provided.";
+    const methodsText = DOM.secMethods?.value.trim() || "No methodology text provided.";
+    const resultsText = DOM.secResults?.value.trim() || "No statistical results provided.";
+    const conclusionText = DOM.secConclusion?.value.trim() || "No final deductions provided.";
+    
+    const selectedJournalValue = DOM.journalRuleSelect?.value || "nature";
+    const journalNameMap = {
+        nature: "Nature Medicine Guidelines Ruleset",
+        lancet: "The Lancet Guidelines Ruleset",
+        nejm: "NEJM Ruleset"
+    };
+    const activeRulesetName = journalNameMap[selectedJournalValue];
+
+    // 2. Construct a Word-compatible HTML string with basic inline styles
+    const docHtmlBody = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <title>${docTitle}</title>
+        <style>
+          body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #111827; padding: 1in; }
+          h1 { color: #1E3A8A; font-size: 22pt; margin-bottom: 6pt; font-weight: bold; }
+          .metadata-tag { color: #4B5563; font-size: 10pt; font-style: italic; margin-bottom: 24pt; border-bottom: 1px solid #E5E7EB; padding-bottom: 6pt; }
+          h2 { color: #0D9488; font-size: 14pt; margin-top: 16pt; margin-bottom: 4pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+          p { font-size: 11pt; margin-bottom: 12pt; text-align: justify; }
+        </style>
+      </head>
+      <body>
+        <h1>${docTitle}</h1>
+        <div class="metadata-tag">Compiled via Clinical Research Hub Framework &bull; Target: ${activeRulesetName}</div>
+        
+        <h2>Introduction / Background</h2>
+        <p>${introText}</p>
+        
+        <h2>Methods</h2>
+        <p>${methodsText}</p>
+        
+        <h2>Results</h2>
+        <p>${resultsText}</p>
+        
+        <h2>Conclusion</h2>
+        <p>${conclusionText}</p>
+      </body>
+      </html>
+    `;
+
+    // 3. Convert content to a true application/msword binary blob object
+    const docBlob = new Blob(['\ufeff' + docHtmlBody], {
+        type: 'application/msword;charset=utf-8;'
+    });
+
+    // 4. Trigger safe download pipeline matching mobile and desktop environments
+    const downloadAnchor = document.createElement("a");
+    const filename = `${docTitle.toLowerCase().replace(/[^a-z0-9]/g, "_")}_abstract_draft.doc`;
+    
+    const docUrl = URL.createObjectURL(docBlob);
+    downloadAnchor.href = docUrl;
+    downloadAnchor.setAttribute("download", filename);
+    
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    
+    // 5. Instantly clear structural footprint from background environment
+    document.body.removeChild(downloadAnchor);
+    URL.revokeObjectURL(docUrl);
+}
+
+/**
+ * Compiles active text layers, runs compliance evaluations, and updates the editor UI metrics
+ */
+async function runLiveCompositionCompilerPipeline() {
+    // 1. Combine all active section fields to evaluate absolute word usage
+    const combinedContentText = [
+        DOM.secIntroduction.value,
+        DOM.secMethods.value,
+        DOM.secResults.value,
+        DOM.secConclusion.value
+    ].join(" ");
+
+    const selectedJournal = DOM.journalRuleSelect.value;
+
+    // 2. Run computational metrics via the unified compiler module
+    const metrics = AbstractCompiler.evaluateMetrics(combinedContentText, selectedJournal);
+
+    // 3. Update Text Word-Counters
+    if (DOM.wordCountDisplay) DOM.wordCountDisplay.textContent = metrics.wordCount;
+    if (DOM.wordLimitDisplay) DOM.wordLimitDisplay.textContent = metrics.limit;
+
+    // 4. Update UI Checklist Badges
+    if (DOM.chkLength) {
+        if (metrics.isSafeLength) {
+            DOM.chkLength.textContent = "✔️ Safe Length Threshold";
+            DOM.chkLength.style.color = "#059669"; // Green
+        } else {
+            DOM.chkLength.textContent = "❌ Word Count Exceeded Target";
+            DOM.chkLength.style.color = "#DC2626"; // Crimson Warning
+        }
+    }
+
+    if (DOM.chkHeadings) {
+        const hasTextInSections = DOM.secIntroduction.value.trim() && DOM.secMethods.value.trim();
+        if (metrics.requiresStructure && !hasTextInSections) {
+            DOM.chkHeadings.textContent = "⚠️ Structural Sections Incomplete";
+            DOM.chkHeadings.style.color = "#D97706"; // Amber Warning
+        } else {
+            DOM.chkHeadings.textContent = "✔️ Structural Headings Active";
+            DOM.chkHeadings.style.color = "#059669";
+        }
+    }
+
+    // 5. Fire off silent persistent asynchronous background save
+    AbstractCompiler.backupDraftState(
+        DOM.abstractTitle.value,
+        DOM.secIntroduction.value,
+        DOM.secMethods.value,
+        DOM.secResults.value,
+        DOM.secConclusion.value,
+        selectedJournal
+    );
+}
+
+/**
+ * Checks for previous browser backup profiles upon login or page initialization
+ */
+async function restoreCachedManuscriptDraft() {
+    const savedDraft = await AbstractCompiler.getSavedDraft();
+    if (!savedDraft) return;
+
+    // Repopulate user workspace inputs with recovered data payload objects
+    if (DOM.abstractTitle) DOM.abstractTitle.value = savedDraft.title || "";
+    if (DOM.secIntroduction) DOM.secIntroduction.value = savedDraft.intro || "";
+    if (DOM.secMethods) DOM.secMethods.value = savedDraft.methods || "";
+    if (DOM.secResults) DOM.secResults.value = savedDraft.results || "";
+    if (DOM.secConclusion) DOM.secConclusion.value = savedDraft.conclusion || "";
+    if (DOM.journalRuleSelect) DOM.journalRuleSelect.value = savedDraft.activeJournal || "nature";
+
+    // Re-evaluate word counts immediately upon data population loading paths
+    runLiveCompositionCompilerPipeline();
+}
