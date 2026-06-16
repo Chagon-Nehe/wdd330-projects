@@ -89,7 +89,7 @@ const DOM = {
 
 let currentAuthMode = "signin";
 
-// 3. CORE CONTROLLER INITIALIZATION FLOW
+// CORE CONTROLLER INITIALIZATION FLOW
 function initApplication() {
   AccountManager.init();
   syncAuthenticationUIElements();
@@ -99,7 +99,7 @@ function initApplication() {
   );
 }
 
-// 4. EVENT BINDINGS REGISTRY
+// EVENT BINDINGS REGISTRY
 function setupEventPipelines() {
   DOM.navDashboard.addEventListener("click", () =>
     switchPrimaryView("dashboard"),
@@ -363,7 +363,7 @@ function loadTargetPaperIntoMatrixPane(paper) {
     : automatedExtraction.endpoints;
 }
 
-// 6. UTILITY UI PROTECTION INTERFACES
+// UTILITY UI PROTECTION INTERFACES
 function injectBlurredShieldOverElement(
   parentElement,
   titleString,
@@ -410,7 +410,7 @@ function toggleAuthenticationContextMode(e) {
   }
 }
 
-// 7. MULTI-SERVICE ENGINE LOOKUP SEARCH PIPELINE
+// MULTI-SERVICE ENGINE LOOKUP SEARCH PIPELINE
 async function handleLiteratureSearch(event) {
   event.preventDefault();
   const query = DOM.searchInput.value.trim();
@@ -518,7 +518,7 @@ initApplication();
  * and triggers a native file download formatted for Microsoft Word (.docx)
  */
 function exportAbstractToDocx() {
-    // 1. Fetch values from fields or assign clean fallbacks if empty
+    // Fetch values from fields or assign clean fallbacks if empty
     const docTitle = DOM.abstractTitle?.value.trim() || "Untitled Manuscript Abstract Draft";
     const introText = DOM.secIntroduction?.value.trim() || "No background text provided.";
     const methodsText = DOM.secMethods?.value.trim() || "No methodology text provided.";
@@ -533,7 +533,7 @@ function exportAbstractToDocx() {
     };
     const activeRulesetName = journalNameMap[selectedJournalValue];
 
-    // 2. Construct a Word-compatible HTML string with basic inline styles
+    // Construct a Word-compatible HTML string with basic inline styles
     const docHtmlBody = `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
       <head>
@@ -565,12 +565,12 @@ function exportAbstractToDocx() {
       </html>
     `;
 
-    // 3. Convert content to a true application/msword binary blob object
+    // Convert content to a true application/msword binary blob object
     const docBlob = new Blob(['\ufeff' + docHtmlBody], {
         type: 'application/msword;charset=utf-8;'
     });
 
-    // 4. Trigger safe download pipeline matching mobile and desktop environments
+    // Trigger safe download pipeline matching mobile and desktop environments
     const downloadAnchor = document.createElement("a");
     const filename = `${docTitle.toLowerCase().replace(/[^a-z0-9]/g, "_")}_abstract_draft.doc`;
     
@@ -581,7 +581,7 @@ function exportAbstractToDocx() {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     
-    // 5. Instantly clear structural footprint from background environment
+    //  Instantly clear structural footprint from background environment
     document.body.removeChild(downloadAnchor);
     URL.revokeObjectURL(docUrl);
 }
@@ -590,7 +590,7 @@ function exportAbstractToDocx() {
  * Compiles active text layers, runs compliance evaluations, and updates the editor UI metrics
  */
 async function runLiveCompositionCompilerPipeline() {
-    // 1. Combine all active section fields to evaluate absolute word usage
+    //  Combine all active section fields to evaluate absolute word usage
     const combinedContentText = [
         DOM.secIntroduction.value,
         DOM.secMethods.value,
@@ -600,14 +600,14 @@ async function runLiveCompositionCompilerPipeline() {
 
     const selectedJournal = DOM.journalRuleSelect.value;
 
-    // 2. Run computational metrics via the unified compiler module
+    // Run computational metrics via the unified compiler module
     const metrics = AbstractCompiler.evaluateMetrics(combinedContentText, selectedJournal);
 
-    // 3. Update Text Word-Counters
+    // Update Text Word-Counters
     if (DOM.wordCountDisplay) DOM.wordCountDisplay.textContent = metrics.wordCount;
     if (DOM.wordLimitDisplay) DOM.wordLimitDisplay.textContent = metrics.limit;
 
-    // 4. Update UI Checklist Badges
+    // Update UI Checklist Badges
     if (DOM.chkLength) {
         if (metrics.isSafeLength) {
             DOM.chkLength.textContent = "✔️ Safe Length Threshold";
@@ -629,7 +629,7 @@ async function runLiveCompositionCompilerPipeline() {
         }
     }
 
-    // 5. Fire off silent persistent asynchronous background save
+    // Fire off silent persistent asynchronous background save
     AbstractCompiler.backupDraftState(
         DOM.abstractTitle.value,
         DOM.secIntroduction.value,
