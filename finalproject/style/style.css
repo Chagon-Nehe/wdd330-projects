@@ -1,4 +1,4 @@
-/* Custom Palette Definitions & System Typography Rules   */
+/* Custom Palette Definitions & System Typography Rules */
 :root {
     --primary-indigo: #1E3A8A;
     --tech-teal: #0F766E;
@@ -27,7 +27,7 @@ body {
     /* Prevents whole-page breaks */
 }
 
-/* Typography Overrides for Document Rendering Contexts [cite: 62] */
+/* Typography Overrides for Document Rendering Contexts  */
 .scrollable-content,
 .manuscript-textarea,
 table {

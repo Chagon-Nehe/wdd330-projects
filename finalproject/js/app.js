@@ -7,7 +7,7 @@ import { AccountManager } from "./AccountManager.mjs";
 // IMPORTING YOUR TARGET CODE MODULES SUCCESSFULLY
 import { MatrixManager } from "./MatrixManager.mjs";
 import { AbstractCompiler } from "./AbstractCompiler.mjs"; // Interacts with structural parser logic
-//import { SemanticScholarService } from "./SemanticScholarService.mjs"; // Cross-database search framework
+import { SemanticScholarService } from "./SemanticScholarService.mjs"; // Cross-database search framework
 
 // 1. RUNNING STATE CONFIGURATION MODEL
 const StateManager = {
@@ -421,15 +421,15 @@ async function handleLiteratureSearch(event) {
   try {
     // MODULAR UPDATES: Simultaneously stream query arrays from BOTH PubMed and SemanticScholar systems!
     const [pubmedResults, semanticResults] = await Promise.allSettled([
-      PubMedService.fetchPublications(query) /*,
-      SemanticScholarService.fetchPublications(query),*/,
+      PubMedService.fetchPublications(query) ,
+      SemanticScholarService.fetchPublications(query),
     ]);
 
     let combinedPublications = [];
     if (pubmedResults.status === "fulfilled")
-      combinedPublications.push(...pubmedResults.value); /*
+      combinedPublications.push(...pubmedResults.value); 
     if (semanticResults.status === "fulfilled")
-      combinedPublications.push(...semanticResults.value);*/
+      combinedPublications.push(...semanticResults.value);
 
     // Filter duplicates based on unique PMIDs or titles if cross-listed
     const uniqueMap = new Map();
